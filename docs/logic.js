@@ -45,14 +45,17 @@ async function obtenerUbicacionActual() {
       (pos) => {
         posicionUsuario = { lat: pos.coords.latitude, lon: pos.coords.longitude };
         ubicacionUsada = "Ubicación actual";
-        alert(`✅ Ubicación actual:\nLat: ${posicionUsuario.lat.toFixed(5)}\nLon: ${posicionUsuario.lon.toFixed(5)}`);
+        
+        // ALERT cuando se obtiene la ubicación por GPS
+        alert(`✅ Ubicación actual obtenida:\n\nLat: ${posicionUsuario.lat.toFixed(5)}\nLon: ${posicionUsuario.lon.toFixed(5)}`);
+        
         resolve(posicionUsuario);
       },
       (err) => {
         let msg = "Error al obtener ubicación";
-        if (err.code === 1) msg = "Permiso denegado";
+        if (err.code === 1) msg = "Permiso de ubicación denegado";
         if (err.code === 2) msg = "Ubicación no disponible";
-        if (err.code === 3) msg = "Tiempo agotado";
+        if (err.code === 3) msg = "Tiempo de espera agotado";
         reject(msg);
       },
       { enableHighAccuracy: true, timeout: 15000 }
@@ -83,7 +86,7 @@ function actualizarInfoBar() {
   document.getElementById('ubicacion-actual').textContent = ubicacionUsada;
 }
 
-// ==================== RENDERIZAR TABLA (SIEMPRE ORDEN POR PRECIO) ====================
+// ==================== RENDERIZAR TABLA (ORDEN SIEMPRE POR PRECIO) ====================
 function renderizarTabla() {
   actualizarInfoBar();
 
@@ -99,7 +102,7 @@ function renderizarTabla() {
     return est[combustibleKey] && parseFloat(est[combustibleKey].replace(',', '.')) > 0;
   });
 
-  // Filtrado geográfico (solo si hay ubicación)
+  // Filtrado geográfico si hay ubicación
   if (posicionUsuario) {
     const delta = 0.0225; // ≈ 5 km
 
@@ -111,7 +114,7 @@ function renderizarTabla() {
              Math.abs(lonEst - posicionUsuario.lon) <= delta;
     });
 
-    // Calcular distancia (solo para mostrarla, no para ordenar)
+    // Calcular distancia solo para mostrar
     estaciones.forEach(est => {
       const latEst = parseFloat(est.Latitud.replace(',', '.'));
       const lonEst = parseFloat(est["Longitud (WGS84)"].replace(',', '.'));
@@ -119,7 +122,7 @@ function renderizarTabla() {
     });
   }
 
-  // ==================== ORDENACIÓN SIEMPRE POR PRECIO ====================
+  // Ordenar siempre por precio (más barato primero)
   estaciones.sort((a, b) => {
     const pA = parseFloat(a[combustibleKey].replace(',', '.') || 999);
     const pB = parseFloat(b[combustibleKey].replace(',', '.') || 999);
@@ -160,13 +163,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   await cargarCentrosCP();
   await cargarDatos();
 
-  // Abrir modales
+  const menu = document.getElementById('menu');
+  const menuBtn = document.getElementById('menu-btn');
+
+  // Hamburguesa
+  menuBtn.addEventListener('click', () => {
+    menu.classList.toggle('show');
+  });
+
+  // Botones "Cambiar"
   document.getElementById('btn-cambiar-combustible').addEventListener('click', () => {
     document.getElementById('modal-combustible').classList.add('show');
+    menu.classList.remove('show');
   });
 
   document.getElementById('btn-cambiar-ubicacion').addEventListener('click', () => {
     document.getElementById('modal-ubicacion').classList.add('show');
+    menu.classList.remove('show');
   });
 
   // Selección de combustible
@@ -183,7 +196,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('modal-combustible').classList.remove('show');
   });
 
-  // Geolocalización
+  // Geolocalización con alert
   document.getElementById('modal-geoloc').addEventListener('click', async () => {
     try {
       await obtenerUbicacionActual();
@@ -194,7 +207,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // Código Postal
+  // Código Postal con alert
   document.getElementById('modal-buscar-cp').addEventListener('click', () => {
     const cp = document.getElementById('modal-codigo-postal').value.trim();
     
@@ -206,8 +219,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (centrosCP && centrosCP[cp]) {
       posicionUsuario = centrosCP[cp];
       ubicacionUsada = `CP ${cp}`;
-      alert(`✅ CP ${cp} seleccionado:\nLat: ${posicionUsuario.lat.toFixed(5)}\nLon: ${posicionUsuario.lon.toFixed(5)}`);
-      
+
+      // ALERT cuando se selecciona por código postal
+      alert(`✅ Código postal ${cp} cargado:\n\nLat: ${posicionUsuario.lat.toFixed(5)}\nLon: ${posicionUsuario.lon.toFixed(5)}`);
+
       document.getElementById('modal-ubicacion').classList.remove('show');
       renderizarTabla();
     } else {
