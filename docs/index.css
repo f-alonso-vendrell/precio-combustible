@@ -9,29 +9,75 @@ body {
 header {
   background: #1e3a8a;
   color: white;
-  padding: 16px;
-  text-align: center;
-  font-size: 1.5rem;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 200;
 }
 
+h1 {
+  font-size: 1.45rem;
+}
+
+.menu-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.9rem;
+  cursor: pointer;
+  padding: 5px 10px;
+}
+
+/* Menú Hamburguesa */
+.menu {
+  display: none;
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  background: white;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  z-index: 150;
+  padding: 10px;
+}
+
+.menu.show {
+  display: block;
+}
+
+.menu-item {
+  display: block;
+  padding: 15px 20px;
+  color: #1e3a8a;
+  text-decoration: none;
+  font-size: 1.1rem;
+}
+
+.menu-item:hover {
+  background: #f1f5f9;
+}
+
+/* Info Bar y resto igual que antes */
 .info-bar {
   background: white;
   padding: 15px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  margin-bottom: 10px;
 }
 
 .selector-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 0;
+  padding: 12px 0;
   border-bottom: 1px solid #eee;
 }
 
 .selector-row:last-child { border-bottom: none; }
 
-.label { font-weight: 500; min-width: 90px; }
+.label { font-weight: 500; min-width: 95px; }
 
 .value {
   flex: 1;
@@ -43,9 +89,9 @@ header {
   background: #64748b;
   color: white;
   border: none;
-  padding: 6px 12px;
+  padding: 7px 14px;
   border-radius: 6px;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   cursor: pointer;
 }
 
@@ -55,20 +101,18 @@ header {
   color: #555;
 }
 
-/* Modal */
+/* Modales */
 .modal {
   display: none;
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.6);
+  inset: 0;
+  background: rgba(0,0,0,0.65);
   z-index: 300;
   align-items: center;
   justify-content: center;
 }
 
-.modal.show {
-  display: flex;
-}
+.modal.show { display: flex; }
 
 .modal-content {
   background: white;
@@ -76,7 +120,6 @@ header {
   max-width: 380px;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
 .modal-content h3 {
@@ -91,27 +134,10 @@ header {
   margin: 8px 0;
   border: none;
   border-radius: 8px;
-  font-size: 1.05rem;
   background: #f1f5f9;
   color: #1e3a8a;
+  font-size: 1.05rem;
   cursor: pointer;
-}
-
-.modal-option:hover {
-  background: #e0e7ff;
-}
-
-.cp-container {
-  display: flex;
-  gap: 8px;
-  margin: 8px 0;
-}
-
-#modal-codigo-postal {
-  flex: 1;
-  padding: 14px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
 }
 
 .btn-cancelar {
@@ -123,10 +149,9 @@ header {
   border: none;
   border-radius: 8px;
   font-size: 1.05rem;
-  cursor: pointer;
 }
 
-/* Tabla (mismo estilo anterior) */
+/* Tabla */
 table {
   width: 100%;
   border-collapse: collapse;
