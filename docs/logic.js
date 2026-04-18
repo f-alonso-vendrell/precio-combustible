@@ -37,7 +37,7 @@ async function cargarDatos() {
     datosPrecios = await res.json();
 
     document.getElementById('info-fecha').innerHTML = 
-      `Actualizado: <strong>${datosPrecios.ultimaActualizacion || 'Sin fecha'}</strong>`;
+      `Actualizado: <strong>${datosPrecios.Fecha || 'Sin fecha'}</strong>`;
 
     // Mostrar menú por defecto la primera vez
     if (!combustibleSeleccionado) {
