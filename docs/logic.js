@@ -206,6 +206,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (centrosCP && centrosCP[cp]) {
       posicionUsuario = centrosCP[cp];
       ubicacionUsada = `CP ${cp}`;
+      alert(`✅ CP ${cp} seleccionado:\nLat: ${posicionUsuario.lat.toFixed(5)}\nLon: ${posicionUsuario.lon.toFixed(5)}`);
+      
       document.getElementById('modal-ubicacion').classList.remove('show');
       renderizarTabla();
     } else {
