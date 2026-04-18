@@ -145,12 +145,12 @@ function renderizarTabla() {
 
     const row = document.createElement('tr');
     row.innerHTML = `
-      <td><strong>${est.Rotulo || 'Sin nombre'}</strong><br>
-          <small>${est.Direccion || ''}, ${est.Municipio || ''}</small></td>
+      <td><strong>${est.Rótulo || 'Sin nombre'}</strong><br>
+          <small>${est.Dirección || ''}, ${est.Municipio || ''}</small></td>
       <td class="distancia">${distanciaTexto}</td>
       <td class="precio">${precio} €</td>
       <td><a href="#" target="_blank">Verificar</a></td>
-      <td><a href="https://www.google.com/maps?q=${est.Latitud || ''},${est.Longitud || ''}" target="_blank">🗺️</a></td>
+      <td><a href="https://www.google.com/maps?q=${est.Latitud || ''},${est["Longitud (WGS84)"]|| ''}" target="_blank">🗺️</a></td>
     `;
     tbody.appendChild(row);
   });
