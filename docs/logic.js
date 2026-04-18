@@ -121,15 +121,15 @@ function renderizarTabla() {
       est.distancia = calcularDistancia(posicionUsuario.lat, posicionUsuario.lon, latEst, lonEst);
     });
 
-    estaciones.sort((a, b) => a.distancia - b.distancia);
-  } else {
-    // Ordenar por precio si no hay ubicación
-    estaciones.sort((a, b) => {
-      const pA = parseFloat(a[combustibleKey].replace(',', '.') || 999);
-      const pB = parseFloat(b[combustibleKey].replace(',', '.') || 999);
-      return pA - pB;
-    });
-  }
+    
+  } 
+  // Ordenar por precio 
+  estaciones.sort((a, b) => {
+    const pA = parseFloat(a[combustibleKey].replace(',', '.') || 999);
+    const pB = parseFloat(b[combustibleKey].replace(',', '.') || 999);
+    return pA - pB;
+  });
+  
 
   const limite = posicionUsuario ? 50 : 30;
 
