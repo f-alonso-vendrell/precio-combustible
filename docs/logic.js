@@ -3,6 +3,26 @@ let posicionUsuario = null;
 let combustibleSeleccionado = null;        // Ahora empieza como null
 let ubicacionUsada = "No seleccionada";
 
+
+// ==================== Codigos postales ====================
+let centrosCP = null;
+
+async function cargarCentrosCP() {
+  const res = await fetch('codigos-postales-centros.json');
+  centrosCP = await res.json();
+}
+
+// Ejemplo de uso cuando el usuario introduce un CP:
+function buscarPorCodigoPostal(cp) {
+  if (centrosCP && centrosCP[cp]) {
+    posicionUsuario = centrosCP[cp];
+    ubicacionUsada = `CP ${cp}`;
+    renderizarTabla();
+  } else {
+    alert("Código postal no encontrado o sin coordenadas");
+  }
+}
+
 // ==================== DISTANCIA ====================
 function calcularDistancia(lat1, lon1, lat2, lon2) {
   const R = 6371;
@@ -37,7 +57,7 @@ async function cargarDatos() {
     datosPrecios = await res.json();
 
     document.getElementById('info-fecha').innerHTML = 
-      `Actualizado: <strong>${datosPrecios.ultimaActualizacion || 'Sin fecha'}</strong>`;
+      `Actualizado: <strong>${datosPrecios.Fecha || 'Sin fecha'}</strong>`;
 
     // Mostrar menú por defecto la primera vez
     if (!combustibleSeleccionado) {
