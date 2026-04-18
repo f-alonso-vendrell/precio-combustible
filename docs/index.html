@@ -12,29 +12,22 @@
     <button id="menu-btn" class="menu-btn">☰</button>
   </header>
 
-  <nav id="menu" class="menu">
-    <div class="menu-section">
-      <h3>Combustible</h3>
-      <button data-combustible="Gasolina 95" class="combustible-btn">Gasolina 95</button>
-      <button data-combustible="Gasolina 95 Premium" class="combustible-btn">Gasolina 95 Premium</button>
-      <button data-combustible="Diésel" class="combustible-btn">Diésel</button>
-      <button data-combustible="Diésel Premium" class="combustible-btn">Diésel Premium</button>
-    </div>
-
-    <div class="menu-section">
-      <h3>Ubicación</h3>
-      <button id="btn-geoloc-menu" class="ubicacion-btn">📍 Usar mi ubicación actual</button>
-      <div class="cp-option">
-        <input type="text" id="codigo-postal" placeholder="Código postal (ej: 28001)" maxlength="5">
-        <button id="btn-cp-menu" class="ubicacion-btn">Buscar por CP</button>
-      </div>
-    </div>
-  </nav>
-
   <div id="info-bar" class="info-bar">
-    <div id="info-combustible" class="info-item">Combustible: <strong>Ninguno seleccionado</strong></div>
-    <div id="info-ubicacion" class="info-item">Ubicación: <strong>No seleccionada</strong></div>
-    <div id="info-fecha" class="info-item">Actualizado: <strong>Cargando...</strong></div>
+    <div class="selector-row">
+      <span class="label">Combustible:</span>
+      <span id="combustible-actual" class="value">Ninguno seleccionado</span>
+      <button id="btn-cambiar-combustible" class="btn-cambiar">Cambiar</button>
+    </div>
+
+    <div class="selector-row">
+      <span class="label">Ubicación:</span>
+      <span id="ubicacion-actual" class="value">No seleccionada</span>
+      <button id="btn-cambiar-ubicacion" class="btn-cambiar">Cambiar</button>
+    </div>
+
+    <div class="fecha-row">
+      Actualizado: <strong id="fecha-actualizacion">Cargando...</strong>
+    </div>
   </div>
 
   <main>
@@ -51,6 +44,31 @@
       <tbody></tbody>
     </table>
   </main>
+
+  <!-- Modal para seleccionar combustible -->
+  <div id="modal-combustible" class="modal">
+    <div class="modal-content">
+      <h3>Selecciona el combustible</h3>
+      <button data-combustible="Gasolina 95" class="modal-option">Gasolina 95</button>
+      <button data-combustible="Gasolina 95 Premium" class="modal-option">Gasolina 95 Premium</button>
+      <button data-combustible="Diésel" class="modal-option">Diésel</button>
+      <button data-combustible="Diésel Premium" class="modal-option">Diésel Premium</button>
+      <button id="cancelar-combustible" class="btn-cancelar">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- Modal para seleccionar ubicación -->
+  <div id="modal-ubicacion" class="modal">
+    <div class="modal-content">
+      <h3>Selecciona la ubicación</h3>
+      <button id="modal-geoloc" class="modal-option">📍 Usar mi ubicación actual</button>
+      <div class="cp-container">
+        <input type="text" id="modal-codigo-postal" placeholder="Código postal (ej: 28001)" maxlength="5">
+        <button id="modal-buscar-cp" class="modal-option">Buscar por CP</button>
+      </div>
+      <button id="cancelar-ubicacion" class="btn-cancelar">Cancelar</button>
+    </div>
+  </div>
 
   <script src="logic.js"></script>
 </body>
