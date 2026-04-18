@@ -1,1 +1,55 @@
-HOLA
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Precios Combustible</title>
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <header>
+    <h1>Precios de Combustible</h1>
+    
+    <!-- Menú Hamburguesa -->
+    <button id="menu-btn" class="menu-btn">☰</button>
+    
+    <nav id="menu" class="menu">
+      <button data-combustible="Gasolina 95" class="combustible-btn active">Gasolina 95</button>
+      <button data-combustible="Gasolina 98" class="combustible-btn">Gasolina 98</button>
+      <button data-combustible="Diésel" class="combustible-btn">Diésel</button>
+      <button data-combustible="Diésel Premium" class="combustible-btn">Diésel Premium</button>
+    </nav>
+  </header>
+
+  <main>
+    <div class="controles">
+      <button id="btn-geoloc" class="btn-primary">📍 Usar mi ubicación actual</button>
+      
+      <div class="cp-container">
+        <input type="text" id="codigo-postal" placeholder="Código postal (ej: 28001)" maxlength="5">
+        <button id="btn-cp" class="btn-secondary">Buscar por CP</button>
+      </div>
+    </div>
+
+    <div class="info">
+      <p id="fecha-actualizacion">Cargando datos...</p>
+      <p id="info-estaciones"></p>
+    </div>
+
+    <table id="tabla-precios">
+      <thead>
+        <tr>
+          <th>Estación</th>
+          <th>Distancia</th>
+          <th>Precio</th>
+          <th>Verificar</th>
+          <th>Cómo llegar</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </main>
+
+  <script src="logic.js"></script>
+</body>
+</html>
