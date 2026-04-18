@@ -1,120 +1,106 @@
 let datosPrecios = null;
 let posicionUsuario = null;
-let combustibleSeleccionado = "Gasolina 95";
+let combustibleSeleccionado = null;        // Ahora empieza como null
+let ubicacionUsada = "No seleccionada";
 
-// ==================== FUNCIONES DE DISTANCIA ====================
-
-// Fórmula de Haversine para calcular distancia en km
+// ==================== DISTANCIA ====================
 function calcularDistancia(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Radio de la Tierra en km
+  const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c; // distancia en kilómetros
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2)**2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
 }
 
-// ==================== OBTENER UBICACIÓN ACTUAL ====================
-
+// ==================== OBTENER UBICACIÓN ====================
 async function obtenerUbicacionActual() {
   return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) {
-      reject("Tu navegador no soporta geolocalización");
-      return;
-    }
+    if (!navigator.geolocation) return reject("Geolocalización no soportada");
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        posicionUsuario = {
-          lat: position.coords.latitude,
-          lon: position.coords.longitude
-        };
+      (pos) => {
+        posicionUsuario = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+        ubicacionUsada = "Ubicación actual";
         resolve(posicionUsuario);
       },
-      (error) => {
-        let mensaje = "Error al obtener ubicación";
-        if (error.code === 1) mensaje = "Permiso denegado";
-        if (error.code === 2) mensaje = "Posición no disponible";
-        if (error.code === 3) mensaje = "Tiempo de espera agotado";
-        reject(mensaje);
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 600000 }
+      (err) => reject("No se pudo obtener la ubicación"),
+      { enableHighAccuracy: true }
     );
   });
 }
 
 // ==================== CARGAR DATOS ====================
-
 async function cargarDatos() {
   try {
-    const response = await fetch('precios-carburantes.json');
-    if (!response.ok) throw new Error('Error al cargar el JSON');
+    const res = await fetch('precios-carburantes.json');
+    datosPrecios = await res.json();
 
-    datosPrecios = await response.json();
+    document.getElementById('info-fecha').innerHTML = 
+      `Actualizado: <strong>${datosPrecios.ultimaActualizacion || 'Sin fecha'}</strong>`;
 
-    document.getElementById('fecha-actualizacion').innerHTML = 
-      `Datos actualizados: <strong>${datosPrecios.ultimaActualizacion || 'Sin fecha'}</strong>`;
+    // Mostrar menú por defecto la primera vez
+    if (!combustibleSeleccionado) {
+      document.getElementById('menu').classList.add('show');
+    }
 
     renderizarTabla();
-  } catch (err) {
-    console.error(err);
-    document.getElementById('fecha-actualizacion').textContent = "Error al cargar los datos";
+  } catch (e) {
+    console.error(e);
   }
 }
 
-// ==================== RENDERIZAR TABLA ====================
+// ==================== RENDERIZAR INFO BAR ====================
+function actualizarInfoBar() {
+  document.getElementById('info-combustible').innerHTML = 
+    `Combustible: <strong>${combustibleSeleccionado || 'Ninguno seleccionado'}</strong>`;
 
+  document.getElementById('info-ubicacion').innerHTML = 
+    `Ubicación: <strong>${ubicacionUsada}</strong>`;
+}
+
+// ==================== RENDERIZAR TABLA ====================
 function renderizarTabla() {
+  actualizarInfoBar();
+
   const tbody = document.querySelector('#tabla-precios tbody');
   tbody.innerHTML = '';
 
-  if (!datosPrecios || !datosPrecios.ListaEESSPrecio) return;
+  if (!datosPrecios || !datosPrecios.ListaEESSPrecio || !combustibleSeleccionado) {
+    const row = document.createElement('tr');
+    row.innerHTML = `<td colspan="5" style="text-align:center; padding:40px;">Selecciona un tipo de combustible</td>`;
+    tbody.appendChild(row);
+    return;
+  }
 
-  let estaciones = datosPrecios.ListaEESSPrecio;
-
-  // Filtrar solo las estaciones que tienen el combustible seleccionado
-  estaciones = estaciones.filter(est => {
-    const precio = est[`Precio${combustibleSeleccionado.replace(/\s+/g, '')}`] || 
-                   est[`Precio ${combustibleSeleccionado}`];
-    return precio && parseFloat(precio) > 0;
+  let estaciones = datosPrecios.ListaEESSPrecio.filter(est => {
+    const precioKey = `Precio${combustibleSeleccionado.replace(/\s+/g, '')}`;
+    return est[precioKey] && parseFloat(est[precioKey]) > 0;
   });
 
-  // Ordenar por precio (más barato primero)
+  // Ordenar por precio
   estaciones.sort((a, b) => {
-    const precioA = parseFloat(a[`Precio${combustibleSeleccionado.replace(/\s+/g, '')}`] || 999);
-    const precioB = parseFloat(b[`Precio${combustibleSeleccionado.replace(/\s+/g, '')}`] || 999);
-    return precioA - precioB;
+    const pA = parseFloat(a[`Precio${combustibleSeleccionado.replace(/\s+/g, '')}`] || 999);
+    const pB = parseFloat(b[`Precio${combustibleSeleccionado.replace(/\s+/g, '')}`] || 999);
+    return pA - pB;
   });
 
-  // Mostrar las 30 más baratas (puedes cambiar este número)
   estaciones.slice(0, 30).forEach(est => {
     let distanciaTexto = "—";
-    let distanciaKm = null;
-
     if (posicionUsuario && est.Latitud && est.Longitud) {
-      const latEst = parseFloat(est.Latitud.replace(',', '.'));
-      const lonEst = parseFloat(est.Longitud.replace(',', '.'));
-      distanciaKm = calcularDistancia(
-        posicionUsuario.lat, 
-        posicionUsuario.lon, 
-        latEst, 
-        lonEst
+      const dist = calcularDistancia(
+        posicionUsuario.lat, posicionUsuario.lon,
+        parseFloat(est.Latitud.replace(',', '.')),
+        parseFloat(est.Longitud.replace(',', '.'))
       );
-      distanciaTexto = distanciaKm < 1 
-        ? `${(distanciaKm*1000).toFixed(0)} m` 
-        : `${distanciaKm.toFixed(1)} km`;
+      distanciaTexto = dist < 1 ? `${(dist*1000).toFixed(0)} m` : `${dist.toFixed(1)} km`;
     }
 
-    const precio = est[`Precio${combustibleSeleccionado.replace(/\s+/g, '')}`] || 
-                   est[`Precio ${combustibleSeleccionado}`] || "—";
+    const precio = est[`Precio${combustibleSeleccionado.replace(/\s+/g, '')}`] || "—";
 
     const row = document.createElement('tr');
     row.innerHTML = `
-      <td><strong>${est.Rotulo || 'Estación sin nombre'}</strong><br>
-          <small>${est.Direccion}, ${est.Municipio}</small></td>
+      <td><strong>${est.Rotulo || 'Sin nombre'}</strong><br><small>${est.Direccion}, ${est.Municipio}</small></td>
       <td class="distancia">${distanciaTexto}</td>
       <td class="precio">${precio} €</td>
       <td><a href="#" target="_blank">Verificar</a></td>
@@ -122,20 +108,15 @@ function renderizarTabla() {
     `;
     tbody.appendChild(row);
   });
-
-  document.getElementById('info-estaciones').textContent = 
-    `Mostrando las 30 estaciones más baratas de ${combustibleSeleccionado}`;
 }
 
 // ==================== EVENTOS ====================
-
 document.addEventListener('DOMContentLoaded', () => {
   cargarDatos();
 
-  // Menú hamburguesa
-  const menuBtn = document.getElementById('menu-btn');
   const menu = document.getElementById('menu');
-  
+  const menuBtn = document.getElementById('menu-btn');
+
   menuBtn.addEventListener('click', () => {
     menu.classList.toggle('show');
   });
@@ -146,30 +127,32 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.combustible-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       combustibleSeleccionado = btn.dataset.combustible;
+      menu.classList.remove('show');   // Contraer menú al seleccionar
       renderizarTabla();
-      menu.classList.remove('show');
     });
   });
 
-  // Botón geolocalización
-  document.getElementById('btn-geoloc').addEventListener('click', async () => {
+  // Geolocalización desde menú
+  document.getElementById('btn-geoloc-menu').addEventListener('click', async () => {
     try {
       await obtenerUbicacionActual();
-      alert('Ubicación obtenida correctamente');
+      menu.classList.remove('show');
       renderizarTabla();
     } catch (err) {
       alert(err);
     }
   });
 
-  // Botón código postal (por ahora solo placeholder)
-  document.getElementById('btn-cp').addEventListener('click', () => {
+  // Código postal (placeholder por ahora)
+  document.getElementById('btn-cp-menu').addEventListener('click', () => {
     const cp = document.getElementById('codigo-postal').value.trim();
     if (cp.length === 5) {
-      alert(`Buscando estaciones cerca del CP ${cp} (función pendiente)`);
-      // Aquí más adelante implementaremos búsqueda por código postal
+      ubicacionUsada = `CP ${cp}`;
+      menu.classList.remove('show');
+      renderizarTabla();
+      alert(`Buscando cerca del CP ${cp} (pendiente de implementar)`);
     } else {
-      alert("Introduce un código postal válido de 5 dígitos");
+      alert("Introduce un código postal de 5 dígitos");
     }
   });
 });
