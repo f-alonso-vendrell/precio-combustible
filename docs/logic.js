@@ -108,16 +108,16 @@ function renderizarTabla() {
     const delta = 0.0225; // ≈ 5 km
 
     estaciones = estaciones.filter(est => {
-      if (!est.Latitud || !est.Longitud) return false;
+      if (!est.Latitud || !est["Longitud (WGS84)"]) return false;
       const latEst = parseFloat(est.Latitud.replace(',', '.'));
-      const lonEst = parseFloat(est.Longitud.replace(',', '.'));
+      const lonEst = parseFloat(est["Longitud (WGS84)"].replace(',', '.'));
       return Math.abs(latEst - posicionUsuario.lat) <= delta &&
              Math.abs(lonEst - posicionUsuario.lon) <= delta;
     });
 
     estaciones.forEach(est => {
       const latEst = parseFloat(est.Latitud.replace(',', '.'));
-      const lonEst = parseFloat(est.Longitud.replace(',', '.'));
+      const lonEst = parseFloat(est["Longitud (WGS84)"].replace(',', '.'));
       est.distancia = calcularDistancia(posicionUsuario.lat, posicionUsuario.lon, latEst, lonEst);
     });
 
@@ -150,7 +150,7 @@ function renderizarTabla() {
       <td class="distancia">${distanciaTexto}</td>
       <td class="precio">${precio} €</td>
       <td><a href="#" target="_blank">Verificar</a></td>
-      <td><a href="https://www.google.com/maps?q=${est.Latitud || ''},${est["Longitud (WGS84)"]|| ''}" target="_blank">🗺️</a></td>
+      <td><a href="https://www.google.com/maps?q=${est.Latitud.replace(',', '.') || ''},${est["Longitud (WGS84)"].replace(',', '.')|| ''}" target="_blank">🗺️</a></td>
     `;
     tbody.appendChild(row);
   });
