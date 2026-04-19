@@ -139,6 +139,13 @@ h1 {
   cursor: pointer;
 }
 
+modal-codigo-postal {
+  flex: 1;
+  padding: 14px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
 .btn-cancelar {
   width: 100%;
   padding: 14px;
