@@ -139,7 +139,7 @@ h1 {
   cursor: pointer;
 }
 
-.modal-codigo-postal {
+.modal-entry {
   flex: 1;
   padding: 14px;
   border: 1px solid #ccc;
