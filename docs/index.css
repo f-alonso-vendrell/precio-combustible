@@ -168,3 +168,57 @@ th { background: #f8fafc; }
 
 .distancia { font-weight: bold; color: #1e40af; }
 .precio { font-size: 1.15rem; font-weight: bold; color: #166534; }
+
+/* Cookie Banner */
+.cookie-banner {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #1e3a8a;
+  color: white;
+  padding: 20px;
+  z-index: 400;
+  box-shadow: 0 -4px 15px rgba(0,0,0,0.3);
+}
+
+.cookie-content {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.cookie-content p {
+  margin-bottom: 15px;
+  font-size: 1rem;
+}
+
+.cookie-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.cookie-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.cookie-btn.aceptar {
+  background: #22c55e;
+  color: white;
+}
+
+.cookie-btn.rechazar {
+  background: #64748b;
+  color: white;
+}
+
+.cookie-banner.show {
+  display: block;
+}
