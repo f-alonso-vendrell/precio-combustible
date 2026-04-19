@@ -1,11 +1,10 @@
 let datosPrecios = null;
 let posicionUsuario = null;
-let combustibleSeleccionado = null;     // nombre visible
-let combustibleKey = null;              // clave real del JSON
+let combustibleSeleccionado = null;
+let combustibleKey = null;
 let ubicacionUsada = "No seleccionada";
-let centrosCP = null;
+let centrosCP = null;                    // se cargará dinámicamente según provincia
 
-// Mapeo de opción visible → clave real en el JSON
 const combustibleMapping = {
   "Gasolina 95": "Precio Gasolina 95 E5",
   "Gasolina 95 Premium": "Precio Gasolina 95 E5 Premium",
@@ -13,14 +12,18 @@ const combustibleMapping = {
   "Diésel Premium": "Precio Gasoleo Premium"
 };
 
-// ==================== Cargar centros de códigos postales ====================
-async function cargarCentrosCP() {
+// ==================== Cargar JSON de códigos postales por provincia ====================
+async function cargarCentrosCP(provincia) {
   try {
-    const res = await fetch('codigos-postales-centros.json');
+    const url = `cp/${provincia}/codigos-postales-centros.json`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("No encontrado");
     centrosCP = await res.json();
-    console.log(`✅ ${Object.keys(centrosCP).length} códigos postales cargados`);
+    console.log(`✅ Cargados ${Object.keys(centrosCP).length} CPs de la provincia ${provincia}`);
+    return true;
   } catch (e) {
-    console.error("Error cargando codigos-postales-centros.json", e);
+    console.error(`No se pudo cargar cp/${provincia}/codigos-postales-centros.json`, e);
+    return false;
   }
 }
 
@@ -29,14 +32,12 @@ function calcularDistancia(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat/2)**2 + 
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-            Math.sin(dLon/2)**2;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2)**2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
 
-// ==================== OBTENER UBICACIÓN ACTUAL ====================
+// ==================== OBTENER UBICACIÓN ====================
 async function obtenerUbicacionActual() {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) return reject("Geolocalización no soportada");
@@ -45,17 +46,14 @@ async function obtenerUbicacionActual() {
       (pos) => {
         posicionUsuario = { lat: pos.coords.latitude, lon: pos.coords.longitude };
         ubicacionUsada = "Ubicación actual";
-        
-        // ALERT cuando se obtiene la ubicación por GPS
         alert(`✅ Ubicación actual obtenida:\n\nLat: ${posicionUsuario.lat.toFixed(5)}\nLon: ${posicionUsuario.lon.toFixed(5)}`);
-        
         resolve(posicionUsuario);
       },
       (err) => {
         let msg = "Error al obtener ubicación";
-        if (err.code === 1) msg = "Permiso de ubicación denegado";
+        if (err.code === 1) msg = "Permiso denegado";
         if (err.code === 2) msg = "Ubicación no disponible";
-        if (err.code === 3) msg = "Tiempo de espera agotado";
+        if (err.code === 3) msg = "Tiempo agotado";
         reject(msg);
       },
       { enableHighAccuracy: true, timeout: 15000 }
@@ -63,7 +61,7 @@ async function obtenerUbicacionActual() {
   });
 }
 
-// ==================== CARGAR DATOS ====================
+// ==================== CARGAR DATOS PRINCIPALES ====================
 async function cargarDatos() {
   try {
     const res = await fetch('precios-carburantes.json');
@@ -74,22 +72,19 @@ async function cargarDatos() {
 
     renderizarTabla();
   } catch (e) {
-    console.error("Error cargando precios-carburantes.json", e);
+    console.error(e);
   }
 }
 
 // ==================== ACTUALIZAR BARRA ====================
 function actualizarInfoBar() {
-  document.getElementById('combustible-actual').textContent = 
-    combustibleSeleccionado || "Ninguno seleccionado";
-  
+  document.getElementById('combustible-actual').textContent = combustibleSeleccionado || "Ninguno seleccionado";
   document.getElementById('ubicacion-actual').textContent = ubicacionUsada;
 }
 
-// ==================== RENDERIZAR TABLA (ORDEN SIEMPRE POR PRECIO) ====================
+// ==================== RENDERIZAR TABLA ====================
 function renderizarTabla() {
   actualizarInfoBar();
-
   const tbody = document.querySelector('#tabla-precios tbody');
   tbody.innerHTML = '';
 
@@ -102,19 +97,15 @@ function renderizarTabla() {
     return est[combustibleKey] && parseFloat(est[combustibleKey].replace(',', '.')) > 0;
   });
 
-  // Filtrado geográfico si hay ubicación
   if (posicionUsuario) {
-    const delta = 0.0225; // ≈ 5 km
-
+    const delta = 0.0225;
     estaciones = estaciones.filter(est => {
       if (!est.Latitud || !est["Longitud (WGS84)"]) return false;
       const latEst = parseFloat(est.Latitud.replace(',', '.'));
       const lonEst = parseFloat(est["Longitud (WGS84)"].replace(',', '.'));
-      return Math.abs(latEst - posicionUsuario.lat) <= delta &&
-             Math.abs(lonEst - posicionUsuario.lon) <= delta;
+      return Math.abs(latEst - posicionUsuario.lat) <= delta && Math.abs(lonEst - posicionUsuario.lon) <= delta;
     });
 
-    // Calcular distancia solo para mostrar
     estaciones.forEach(est => {
       const latEst = parseFloat(est.Latitud.replace(',', '.'));
       const lonEst = parseFloat(est["Longitud (WGS84)"].replace(',', '.'));
@@ -122,7 +113,7 @@ function renderizarTabla() {
     });
   }
 
-  // Ordenar siempre por precio (más barato primero)
+  // Siempre ordenar por precio
   estaciones.sort((a, b) => {
     const pA = parseFloat(a[combustibleKey].replace(',', '.') || 999);
     const pB = parseFloat(b[combustibleKey].replace(',', '.') || 999);
@@ -134,9 +125,7 @@ function renderizarTabla() {
   estaciones.slice(0, limite).forEach(est => {
     let distanciaTexto = "—";
     if (est.distancia !== undefined) {
-      distanciaTexto = est.distancia < 1 
-        ? `${(est.distancia * 1000).toFixed(0)} m` 
-        : `${est.distancia.toFixed(1)} km`;
+      distanciaTexto = est.distancia < 1 ? `${(est.distancia * 1000).toFixed(0)} m` : `${est.distancia.toFixed(1)} km`;
     }
 
     const precio = est[combustibleKey] || "—";
@@ -152,26 +141,18 @@ function renderizarTabla() {
     `;
     tbody.appendChild(row);
   });
-
-  if (estaciones.length === 0 && posicionUsuario) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:30px;">No se encontraron estaciones cercanas</td></tr>`;
-  }
 }
 
 // ==================== EVENTOS ====================
 document.addEventListener('DOMContentLoaded', async () => {
-  await cargarCentrosCP();
   await cargarDatos();
 
   const menu = document.getElementById('menu');
   const menuBtn = document.getElementById('menu-btn');
 
-  // Hamburguesa
-  menuBtn.addEventListener('click', () => {
-    menu.classList.toggle('show');
-  });
+  menuBtn.addEventListener('click', () => menu.classList.toggle('show'));
 
-  // Botones "Cambiar"
+  // Botones Cambiar
   document.getElementById('btn-cambiar-combustible').addEventListener('click', () => {
     document.getElementById('modal-combustible').classList.add('show');
     menu.classList.remove('show');
@@ -182,7 +163,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     menu.classList.remove('show');
   });
 
-  // Selección de combustible
+  // Selección combustible
   document.querySelectorAll('#modal-combustible .modal-option').forEach(btn => {
     btn.addEventListener('click', () => {
       combustibleSeleccionado = btn.dataset.combustible;
@@ -196,7 +177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('modal-combustible').classList.remove('show');
   });
 
-  // Geolocalización con alert
+  // Geolocalización
   document.getElementById('modal-geoloc').addEventListener('click', async () => {
     try {
       await obtenerUbicacionActual();
@@ -207,26 +188,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // Código Postal con alert
-  document.getElementById('modal-buscar-cp').addEventListener('click', () => {
-    const cp = document.getElementById('modal-codigo-postal').value.trim();
-    
+  // Código Postal con carga dinámica por provincia
+  document.getElementById('modal-buscar-cp').addEventListener('click', async () => {
+    let cp = document.getElementById('modal-codigo-postal').value.trim();
     if (cp.length !== 5) {
       alert("Introduce un código postal válido de 5 dígitos");
       return;
+    }
+
+    const provincia = cp.substring(0, 2);   // ej: "28"
+
+    // Cargar el JSON de la provincia si no está cargado o es diferente
+    if (!centrosCP || centrosCP._provincia !== provincia) {
+      const cargado = await cargarCentrosCP(provincia);
+      if (cargado) centrosCP._provincia = provincia;   // marca interna
     }
 
     if (centrosCP && centrosCP[cp]) {
       posicionUsuario = centrosCP[cp];
       ubicacionUsada = `CP ${cp}`;
 
-      // ALERT cuando se selecciona por código postal
       alert(`✅ Código postal ${cp} cargado:\n\nLat: ${posicionUsuario.lat.toFixed(5)}\nLon: ${posicionUsuario.lon.toFixed(5)}`);
 
       document.getElementById('modal-ubicacion').classList.remove('show');
       renderizarTabla();
     } else {
-      alert(`Código postal ${cp} no encontrado`);
+      alert(`Código postal ${cp} no encontrado en la provincia ${provincia}`);
     }
   });
 
