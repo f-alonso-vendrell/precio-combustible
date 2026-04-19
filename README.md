@@ -2,6 +2,8 @@
 
 Aplicación web que muestra los precios actualizados de carburantes en las estaciones de servicio de España, con opción de filtrado por ubicación (geolocalización o código postal).
 
+Enlace para acceder [https://f-alonso-vendrell.github.io/precio-combustible/](https://f-alonso-vendrell.github.io/precio-combustible/)
+
 ## ¿Qué hace?
 
 - Muestra los precios oficiales de **Gasolina 95, Gasolina 95 Premium, Diésel y Diésel Premium**.
