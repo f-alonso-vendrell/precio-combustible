@@ -147,8 +147,8 @@ function renderizarTabla() {
       <td><strong>${est.Rótulo || 'Sin nombre'}</strong><br>
           <small>${est.Dirección || ''}, ${est.Municipio || ''}</small></td>
       <td class="distancia">${distanciaTexto}</td>
-      <td class="precio">${est[combustibleKey] || "—"} €</td>
-      <td><a href="#" target="_blank">Verificar</a></td>
+      <td class="precio">${est[combustibleKey] || "—"} €
+      (<a href="https://www.google.com/search?q=%22${est.Rótulo || 'Sin nombre'} ${est.Dirección || ''}, ${est.Municipio || ''}%22" target="_blank">Verificar</a>)</td>
       <td><a href="https://www.google.com/maps?q=${est.Latitud?.replace(',', '.') || ''},${est["Longitud (WGS84)"]?.replace(',', '.') || ''}" target="_blank">🗺️</a></td>
     `;
     tbody.appendChild(row);
