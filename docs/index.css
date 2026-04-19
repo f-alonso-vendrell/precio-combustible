@@ -167,6 +167,7 @@ th { background: #f8fafc; }
 
 .distancia { font-weight: bold; color: #1e40af; }
 .precio { font-size: 0.8rem; font-weight: bold; color: #166534; }
+.maps { font-size: 2.0em; }
 
 /* Cookie Banner */
 .cookie-banner {

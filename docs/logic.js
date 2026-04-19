@@ -149,7 +149,7 @@ function renderizarTabla() {
       <td class="distancia">${distanciaTexto}</td>
       <td class="precio">${est[combustibleKey] || "—"} €
       (<a href="https://www.google.com/search?q=%22${est.Rótulo || 'Sin nombre'} ${est.Dirección || ''}, ${est.Municipio || ''}%22" target="_blank">Verificar</a>)</td>
-      <td><a href="https://www.google.com/maps?q=${est.Latitud?.replace(',', '.') || ''},${est["Longitud (WGS84)"]?.replace(',', '.') || ''}" target="_blank">🗺️</a></td>
+      <td  class="maps"><a href="https://www.google.com/maps?q=${est.Latitud?.replace(',', '.') || ''},${est["Longitud (WGS84)"]?.replace(',', '.') || ''}" target="_blank">🗺️</a></td>
     `;
     tbody.appendChild(row);
   });
