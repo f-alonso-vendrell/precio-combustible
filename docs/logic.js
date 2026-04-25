@@ -320,7 +320,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       renderizarTabla();
     } catch (err) {
       errmsgubicacion=err;
-      renderizarTabla()
+      renderizarTabla();
+      document.getElementById('modal-ubicacion').classList.remove('show');
       //alert(err);
     }
   });
