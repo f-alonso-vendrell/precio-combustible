@@ -221,6 +221,7 @@ async function initCookies() {
         await obtenerUbicacionActual();
       } catch (e) {
         console.log("No se pudo recuperar ubicación GPS automáticamente");
+        console.log(e);
       }
     } 
     else if (savedUbicacion.startsWith("CP ")) {
