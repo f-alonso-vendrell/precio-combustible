@@ -101,7 +101,7 @@ async function obtenerUbicacionActual() {
         if (err.code === 1) errmsgubicacion = "Permiso de ubicación denegado";
         if (err.code === 2) errmsgubicacion = "Ubicación no disponible";
         if (err.code === 3) errmsgubicacion = "Tiempo de espera agotado";
-        actualizarInfoBar();
+        renderizarTabla();
         reject(errmsgubicacion);
       },
       { enableHighAccuracy: true, timeout: 15000 }
