@@ -148,7 +148,7 @@ function renderizarTabla() {
   const tbody = document.querySelector('#tabla-precios tbody');
   tbody.innerHTML = '';
 
-  if (!datosPrecios || !combustibleKey || errmsgubicacion != "" || errmsgnetwork != "") {
+  if (!posicionUsuario || !combustibleKey || errmsgubicacion != "" || errmsgnetwork != "") {
     let msg = ''
     if (!combustibleKey) {
       msg = msg + '<tr colspan="5" style="text-align:center;padding:50px;">Selecciona un tipo de combustible</tr>\n';
