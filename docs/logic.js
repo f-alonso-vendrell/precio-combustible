@@ -153,7 +153,7 @@ function renderizarTabla() {
     if (!combustibleKey) {
       msg = msg + '<tr colspan="5" style="text-align:center;padding:50px;">Selecciona un tipo de combustible</tr>\n';
     }
-    if (!posicionUsuario){
+    if (!posicionUsuario || ubicacionUsada == "No seleccionada" ){
       msg = msg + '<tr colspan="5" style="text-align:center;padding:50px;">Selecciona una ubicación</tr>\n';
     }
     if (errmsgubicacion != ""){
@@ -165,6 +165,8 @@ function renderizarTabla() {
     tbody.innerHTML = msg;
     return;
   }
+
+  
 
   let estaciones = datosPrecios.ListaEESSPrecio.filter(est => {
     return est[combustibleKey] && parseFloat(est[combustibleKey].replace(',', '.')) > 0;
