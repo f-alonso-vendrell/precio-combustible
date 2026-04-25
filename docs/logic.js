@@ -63,6 +63,7 @@ function calcularDistancia(lat1, lon1, lat2, lon2) {
 // ==================== OBTENER UBICACIÓN ACTUAL ====================
 async function obtenerUbicacionActual() {
   estaObteniendoUbicacion = true;
+  ubicacionUsada = "Ubicación actual";
   actualizarInfoBar();                    // ← Muestra "refrescando..." inmediatamente
 
   return new Promise((resolve, reject) => {
@@ -78,7 +79,7 @@ async function obtenerUbicacionActual() {
           lat: pos.coords.latitude, 
           lon: pos.coords.longitude 
         };
-        ubicacionUsada = "Ubicación actual";
+        
         estaObteniendoUbicacion = false;
 
         alert(`✅ Ubicación actual obtenida:\n\nLat: ${posicionUsuario.lat.toFixed(5)}\nLon: ${posicionUsuario.lon.toFixed(5)}`);
@@ -88,11 +89,12 @@ async function obtenerUbicacionActual() {
       },
       (err) => {
         estaObteniendoUbicacion = false;
-        actualizarInfoBar();
+        
         let msg = "No se pudo obtener la ubicación";
         if (err.code === 1) msg = "Permiso de ubicación denegado";
         if (err.code === 2) msg = "Ubicación no disponible";
         if (err.code === 3) msg = "Tiempo de espera agotado";
+        actualizarInfoBar(msg);
         reject(msg);
       },
       { enableHighAccuracy: true, timeout: 15000 }
@@ -114,7 +116,7 @@ async function cargarDatos() {
 }
 
 // ==================== ACTUALIZAR BARRA ====================
-function actualizarInfoBar() {
+function actualizarInfoBar(errmsg) {
   document.getElementById('combustible-actual').textContent = combustibleSeleccionado || "Ninguno seleccionado";
   let textoUbicacion = ubicacionUsada;
 
@@ -124,6 +126,9 @@ function actualizarInfoBar() {
     } else if (!posicionUsuario) {
       textoUbicacion = "Ubicación actual (refrescando...)";
     }
+  }
+  if (errmsg){
+    textoUbicacion = textoUbicacion + errmsg;
   }
 
   document.getElementById('ubicacion-actual').textContent = textoUbicacion;
