@@ -150,7 +150,7 @@ function renderizarTabla() {
 
   if (!datosPrecios || !combustibleKey || errmsgubicacion != "" || errmsgnetwork != "") {
     let msg = ''
-    if (!datosPrecios || !combustibleKey) {
+    if (!combustibleKey) {
       msg = msg + '<tr colspan="5" style="text-align:center;padding:50px;">Selecciona un tipo de combustible</tr>\n';
     }
     if (!posicionUsuario){
@@ -321,7 +321,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (err) {
       errmsgubicacion=err;
       renderizarTabla()
-      alert(err);
+      //alert(err);
     }
   });
 
