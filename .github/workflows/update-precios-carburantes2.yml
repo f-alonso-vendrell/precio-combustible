@@ -2,12 +2,15 @@ name: Actualizar Precios Carburantes
 
 on:
   schedule:
-    - cron: '0 4 * * *'     # ≈ 6:00 CET (puede variar ±1-2h)
-  workflow_dispatch:           # Permite ejecución manual
+    - cron: '0 4 * * *'     # ≈ 6:00 CET
+  workflow_dispatch:
 
 jobs:
   update:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -25,6 +28,7 @@ jobs:
         uses: EndBug/add-and-commit@v9
         with:
           add: 'docs/precios-carburantes.json'
-          message: 'Actualización automática de precios carburantes - ${{ format('{0,date,yyyy-MM-dd HH:mm}', github.event.repository.updated_at) }}'
+          # Versión simple y fiable de la fecha
+          message: 'Actualización automática de precios carburantes - ${{ github.event.schedule }}'
           default_author: github_actions
-          github_token: ${{ secrets.GITHUB_TOKEN }}   # ← Esto es importante
+          github_token: ${{ secrets.GITHUB_TOKEN }}
