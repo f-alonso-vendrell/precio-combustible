@@ -6,6 +6,9 @@ let ubicacionUsada = "No seleccionada";
 let centrosCP = null;
 let estaObteniendoUbicacion = false;   // ← Nueva variable
 
+let errmsgubicacion = "";
+let errmsgnetwork = "";
+
 const combustibleMapping = {
   "Gasolina 95": "Precio Gasolina 95 E5",
   "Gasolina 95 Premium": "Precio Gasolina 95 E5 Premium",
@@ -43,8 +46,10 @@ async function cargarCentrosCP(provincia) {
     if (!res.ok) throw new Error();
     centrosCP = await res.json();
     centrosCP._provincia = provincia;
+    errmsgnetwork=""
     return true;
   } catch (e) {
+    errmsgnetwork = `No se pudo cargar cp/${provincia}/...`;
     console.error(`No se pudo cargar cp/${provincia}/...`);
     return false;
   }
@@ -69,7 +74,8 @@ async function obtenerUbicacionActual() {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
       estaObteniendoUbicacion = false;
-      actualizarInfoBar("Geolocalización no soportada");
+      errmsgubicacion = "Geolocalización no soportada";
+      actualizarInfoBar();
       return reject("Geolocalización no soportada");
     }
 
@@ -85,17 +91,18 @@ async function obtenerUbicacionActual() {
         // alert(`✅ Ubicación actual obtenida:\n\nLat: ${posicionUsuario.lat.toFixed(5)}\nLon: ${posicionUsuario.lon.toFixed(5)}`);
         
         actualizarInfoBar();   // Actualiza a "Ubicación actual"
+        errmsgubicacion="";
         resolve(posicionUsuario);
       },
       (err) => {
         estaObteniendoUbicacion = false;
         
-        let msg = "No se pudo obtener la ubicación";
-        if (err.code === 1) msg = "Permiso de ubicación denegado";
-        if (err.code === 2) msg = "Ubicación no disponible";
-        if (err.code === 3) msg = "Tiempo de espera agotado";
-        actualizarInfoBar(msg);
-        reject(msg);
+        errmsgubicacion = "No se pudo obtener la ubicación";
+        if (err.code === 1) errmsgubicacion = "Permiso de ubicación denegado";
+        if (err.code === 2) errmsgubicacion = "Ubicación no disponible";
+        if (err.code === 3) errmsgubicacion = "Tiempo de espera agotado";
+        actualizarInfoBar();
+        reject(errmsgubicacion);
       },
       { enableHighAccuracy: true, timeout: 15000 }
     );
@@ -107,16 +114,19 @@ async function cargarDatos() {
   try {
     const res = await fetch('precios-carburantes.json');
     datosPrecios = await res.json();
+    errmsgnetwork="";
     document.getElementById('fecha-actualizacion').textContent = 
       datosPrecios.ultimaActualizacion || datosPrecios.Fecha || 'Sin fecha';
     renderizarTabla();
   } catch (e) {
+    errmsgnetwork=e;
     console.error(e);
+    renderizarTabla();
   }
 }
 
 // ==================== ACTUALIZAR BARRA ====================
-function actualizarInfoBar(errmsg) {
+function actualizarInfoBar() {
   document.getElementById('combustible-actual').textContent = combustibleSeleccionado || "Ninguno seleccionado";
   let textoUbicacion = ubicacionUsada;
 
@@ -127,10 +137,7 @@ function actualizarInfoBar(errmsg) {
       textoUbicacion = "Ubicación actual (refrescando...)";
     }
   }
-  if (errmsg){
-    textoUbicacion = textoUbicacion + errmsg;
-  }
-
+  
   document.getElementById('ubicacion-actual').textContent = textoUbicacion;
 
 }
@@ -141,8 +148,21 @@ function renderizarTabla() {
   const tbody = document.querySelector('#tabla-precios tbody');
   tbody.innerHTML = '';
 
-  if (!datosPrecios || !combustibleKey) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:50px;">Selecciona un tipo de combustible</td></tr>`;
+  if (!datosPrecios || !combustibleKey || errmsgubicacion != "" || errmsgnetwork != "") {
+    let msg = ''
+    if (!datosPrecios || !combustibleKey) {
+      msg = msg + '<tr colspan="5" style="text-align:center;padding:50px;">Selecciona un tipo de combustible</tr>\n';
+    }
+    if (!posicionUsuario){
+      msg = msg + '<tr colspan="5" style="text-align:center;padding:50px;">Selecciona una ubicación</tr>\n';
+    }
+    if (errmsgubicacion != ""){
+      msg = msg + '<tr colspan="5" style="text-align:center;padding:50px;">'+errmsgubicacion+'</tr>\n';
+    }
+    if (errmsgnetwork != ""){
+      msg = msg + '<tr colspan="5" style="text-align:center;padding:50px;">'+errmsgnetwork+'</tr>\n';
+    }
+    tbody.innerHTML = msg;
     return;
   }
 
@@ -296,9 +316,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       await obtenerUbicacionActual();
       setCookie("ubicacion", "Ubicación actual");
       document.getElementById('modal-ubicacion').classList.remove('show');
+      errmsgubicacion='';
       renderizarTabla();
     } catch (err) {
-      actualizarInfoBar(err)
+      errmsgubicacion=err;
+      renderizarTabla()
       alert(err);
     }
   });
@@ -319,9 +341,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       ubicacionUsada = `CP ${cp}`;
       setCookie("ubicacion", ubicacionUsada);
       document.getElementById('modal-ubicacion').classList.remove('show');
+      errmsgubicacion="";
       renderizarTabla();
     } else {
-      alert(`Código postal ${cp} no encontrado`);
+      errmsgubicacion=`Código postal ${cp} no encontrado`;
+      renderizarTabla();
+      // alert(`Código postal ${cp} no encontrado`);
     }
   });
 
