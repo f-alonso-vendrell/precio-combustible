@@ -69,7 +69,7 @@ async function obtenerUbicacionActual() {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
       estaObteniendoUbicacion = false;
-      actualizarInfoBar();
+      actualizarInfoBar("Geolocalización no soportada");
       return reject("Geolocalización no soportada");
     }
 
@@ -82,7 +82,7 @@ async function obtenerUbicacionActual() {
         
         estaObteniendoUbicacion = false;
 
-        alert(`✅ Ubicación actual obtenida:\n\nLat: ${posicionUsuario.lat.toFixed(5)}\nLon: ${posicionUsuario.lon.toFixed(5)}`);
+        // alert(`✅ Ubicación actual obtenida:\n\nLat: ${posicionUsuario.lat.toFixed(5)}\nLon: ${posicionUsuario.lon.toFixed(5)}`);
         
         actualizarInfoBar();   // Actualiza a "Ubicación actual"
         resolve(posicionUsuario);
