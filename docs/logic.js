@@ -314,9 +314,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Geolocalización
   document.getElementById('modal-geoloc').addEventListener('click', async () => {
-    if (ubicacionUsada != "Ubicación actual"){
-      return;
-    }
+    
     try {
       await obtenerUbicacionActual();
       setCookie("ubicacion", "Ubicación actual");
