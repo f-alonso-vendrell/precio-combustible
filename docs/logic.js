@@ -222,6 +222,7 @@ async function initCookies() {
       } catch (e) {
         console.log("No se pudo recuperar ubicación GPS automáticamente");
         console.log(e);
+        actualizarInfoBar(e);
       }
     } 
     else if (savedUbicacion.startsWith("CP ")) {
@@ -293,7 +294,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('modal-ubicacion').classList.remove('show');
       renderizarTabla();
     } catch (err) {
-      actualizarInfoBar(err);
+      actualizarInfoBar(err)
       alert(err);
     }
   });
