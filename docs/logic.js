@@ -293,6 +293,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('modal-ubicacion').classList.remove('show');
       renderizarTabla();
     } catch (err) {
+      renderizarTabla(err);
       alert(err);
     }
   });
