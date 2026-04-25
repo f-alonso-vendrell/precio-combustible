@@ -223,6 +223,9 @@ async function initCookies() {
         console.log("No se pudo recuperar ubicación GPS automáticamente");
         actualizarInfoBar(e);
         console.log(e);
+        posicionUsuario=null;
+
+        return;
 
       }
     } 
