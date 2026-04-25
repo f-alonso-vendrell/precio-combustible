@@ -4,6 +4,7 @@ let combustibleSeleccionado = null;
 let combustibleKey = null;
 let ubicacionUsada = "No seleccionada";
 let centrosCP = null;
+let estaObteniendoUbicacion = false;   // ← Nueva variable
 
 const combustibleMapping = {
   "Gasolina 95": "Precio Gasolina 95 E5",
@@ -61,17 +62,39 @@ function calcularDistancia(lat1, lon1, lat2, lon2) {
 
 // ==================== OBTENER UBICACIÓN ACTUAL ====================
 async function obtenerUbicacionActual() {
+  estaObteniendoUbicacion = true;
+  actualizarInfoBar();                    // ← Muestra "refrescando..." inmediatamente
+
   return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) return reject("Geolocalización no soportada");
+    if (!navigator.geolocation) {
+      estaObteniendoUbicacion = false;
+      actualizarInfoBar();
+      return reject("Geolocalización no soportada");
+    }
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        posicionUsuario = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+        posicionUsuario = { 
+          lat: pos.coords.latitude, 
+          lon: pos.coords.longitude 
+        };
         ubicacionUsada = "Ubicación actual";
-        alert(`✅ Ubicación actual obtenida:\nLat: ${posicionUsuario.lat.toFixed(5)}\nLon: ${posicionUsuario.lon.toFixed(5)}`);
+        estaObteniendoUbicacion = false;
+
+        alert(`✅ Ubicación actual obtenida:\n\nLat: ${posicionUsuario.lat.toFixed(5)}\nLon: ${posicionUsuario.lon.toFixed(5)}`);
+        
+        actualizarInfoBar();   // Actualiza a "Ubicación actual"
         resolve(posicionUsuario);
       },
-      (err) => reject("No se pudo obtener la ubicación"),
+      (err) => {
+        estaObteniendoUbicacion = false;
+        actualizarInfoBar();
+        let msg = "No se pudo obtener la ubicación";
+        if (err.code === 1) msg = "Permiso de ubicación denegado";
+        if (err.code === 2) msg = "Ubicación no disponible";
+        if (err.code === 3) msg = "Tiempo de espera agotado";
+        reject(msg);
+      },
       { enableHighAccuracy: true, timeout: 15000 }
     );
   });
@@ -93,7 +116,18 @@ async function cargarDatos() {
 // ==================== ACTUALIZAR BARRA ====================
 function actualizarInfoBar() {
   document.getElementById('combustible-actual').textContent = combustibleSeleccionado || "Ninguno seleccionado";
-  document.getElementById('ubicacion-actual').textContent = ubicacionUsada;
+  let textoUbicacion = ubicacionUsada;
+
+  if (ubicacionUsada === "Ubicación actual") {
+    if (estaObteniendoUbicacion) {
+      textoUbicacion = "Ubicación actual (refrescando...)";
+    } else if (!posicionUsuario) {
+      textoUbicacion = "Ubicación actual (refrescando...)";
+    }
+  }
+
+  document.getElementById('ubicacion-actual').textContent = textoUbicacion;
+
 }
 
 // ==================== RENDERIZAR TABLA ====================
