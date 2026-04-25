@@ -3,7 +3,7 @@ name: Actualizar Precios Carburantes
 on:
   schedule:
     - cron: '0 4 * * *'     # ≈ 6:00 CET (puede variar ±1-2h)
-  workflow_dispatch:
+  workflow_dispatch:           # Permite ejecución manual
 
 jobs:
   update:
