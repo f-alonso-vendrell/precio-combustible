@@ -29,6 +29,6 @@ jobs:
         with:
           add: 'docs/precios-carburantes.json'
           # Versión simple y fiable de la fecha
-          message: 'Actualización automática de precios carburantes - ${{ github.event.schedule }}'
+          message: 'Actualización automática de precios carburantes - ${{ github.event.repository.updated_at }}'
           default_author: github_actions
           github_token: ${{ secrets.GITHUB_TOKEN }}
