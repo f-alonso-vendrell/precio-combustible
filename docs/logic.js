@@ -316,10 +316,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('modal-geoloc').addEventListener('click', async () => {
     
     try {
-      await obtenerUbicacionActual();
-      setCookie("ubicacion", "Ubicación actual");
       document.getElementById('modal-ubicacion').classList.remove('show');
       errmsgubicacion='';
+      await obtenerUbicacionActual();
+      setCookie("ubicacion", "Ubicación actual");
       renderizarTabla();
     } catch (err) {
       errmsgubicacion=err;
