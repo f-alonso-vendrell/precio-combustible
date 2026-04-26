@@ -53,7 +53,7 @@ function setCar(nuevoCombustible) {
   actualizarTabla();
 }
 
-// ==================== GESTIÓN DE UBICACIÓN ====================
+// ==================== GESTIÓN DE UBICACIÓN (ahora en localStorage) ====================
 
 let currentLocation = {
   tipo: "No seleccionada",     // "Ubicación actual" o "CP 28001"
@@ -66,7 +66,8 @@ function getLocation() {
     return { ...currentLocation };
   }
 
-  const saved = getCookie("ubicacion");
+  // Leer desde localStorage
+  const saved = localStorage.getItem('ubicacion');
 
   if (saved) {
     if (saved === "Ubicación actual") {
@@ -92,11 +93,11 @@ function setLocation(nuevoTipo, nuevoValor = null, nuevaPosicion = null) {
   currentLocation.valor = nuevoValor;
   currentLocation.posicion = nuevaPosicion;
 
-  // Guardar en cookie
+  // Guardar en localStorage
   if (nuevoTipo === "Ubicación actual") {
-    setCookie("ubicacion", "Ubicación actual");
+    localStorage.setItem('ubicacion', "Ubicación actual");
   } else if (nuevoValor) {
-    setCookie("ubicacion", `CP ${nuevoValor}`);
+    localStorage.setItem('ubicacion', `CP ${nuevoValor}`);
   }
 
   actualizarInfoBar();
@@ -223,7 +224,7 @@ function actualizarTabla() {
     tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:50px;">Selecciona un tipo de combustible</td></tr>`;
     return;
   }
-  if (!posicionUsuario && getLocation().tipo === "No seleccionada") {
+  if (getLocation().tipo === "No seleccionada") {
     tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:50px;">Selecciona una ubicación</td></tr>`;
     return;
   }
@@ -280,7 +281,7 @@ function actualizarTabla() {
   });
 }
 
-// ==================== COOKIES ====================
+// ==================== COOKIES (solo para banner de cookies) ====================
 function setCookie(name, value, days = 30) {
   const date = new Date();
   date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
@@ -307,10 +308,10 @@ async function initPersistence() {
     return;
   }
 
-  // Cargar combustible
+  // Cargar combustible desde localStorage
   getCar();
 
-  // Cargar ubicación
+  // Cargar ubicación desde localStorage
   const loc = getLocation();
 
   if (loc.tipo === "Ubicación actual") {
@@ -405,7 +406,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (cargado && centrosCP && centrosCP[cp]) {
       posicionUsuario = centrosCP[cp];
       ubicacionUsada = `CP ${cp}`;
-      setLocation(`CP ${cp}`, cp, null);
+      setLocation(`CP ${cp}`, cp);
       errmsgubicacion = "";
       document.getElementById('modal-ubicacion').classList.remove('show');
       actualizarTabla();
@@ -419,6 +420,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('modal-ubicacion').classList.remove('show');
   });
 
-  // Iniciar
+  // Iniciar persistencia
   initPersistence();
 });
