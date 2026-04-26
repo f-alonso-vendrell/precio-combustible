@@ -98,6 +98,10 @@ function getLocation() {
       currentLocation.tipo = saved;
       currentLocation.valor = saved.substring(3);
       currentLocation.posicion = null;
+    } else {
+      currentLocation.tipo = saved;
+      currentLocation.valor = saved;
+      currentLocation.posicion = null;
     }
   } else {
     currentLocation.tipo = "No seleccionada";
