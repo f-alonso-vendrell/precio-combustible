@@ -2,6 +2,7 @@
 let datosPrecios = null;
 let posicionUsuario = null;
 let centrosCP = null;
+let municipiosData = null;           // Datos de todos los municipios
 let estaObteniendoUbicacion = false;
 
 let errmsgubicacion = "";
@@ -136,6 +137,50 @@ function setLocation(nuevoTipo, nuevoValor = null, nuevaPosicion = null) {
   actualizarTabla();
 }
 
+// ==================== NUEVA: CARGA Y BÚSQUEDA DE MUNICIPIOS ====================
+
+async function cargarMunicipios() {
+  try {
+    const res = await fetch('municipios/municipios-centros.json');
+    if (!res.ok) throw new Error('No se pudo cargar el archivo de municipios');
+    municipiosData = await res.json();
+    console.log(`✅ Cargados ${Object.keys(municipiosData).length} municipios`);
+    return true;
+  } catch (e) {
+    console.error("Error cargando municipios-centros.json", e);
+    return false;
+  }
+}
+
+// Normaliza texto: elimina acentos y convierte a minúsculas
+function normalizarTexto(texto) {
+  return texto
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+// Busca municipios que contengan el texto (mínimo 3 caracteres)
+function buscarMunicipio(texto) {
+  if (!municipiosData || texto.length < 3) {
+    return [];
+  }
+
+  const busqueda = normalizarTexto(texto);
+  const resultados = [];
+
+  for (const nombre of Object.keys(municipiosData)) {
+    if (normalizarTexto(nombre).includes(busqueda)) {
+      resultados.push(nombre);
+    }
+  }
+
+  // Ordenar alfabéticamente
+  resultados.sort((a, b) => a.localeCompare(b));
+
+  return resultados;
+}
+
 // ==================== DISTANCIA ====================
 function calcularDistancia(lat1, lon1, lat2, lon2) {
   const R = 6371;
@@ -234,9 +279,6 @@ function actualizarInfoBar() {
   }
 
   document.getElementById('ubicacion-actual').textContent = textoUbicacion;
-
-  // Actualizar estilo del botón "Borrar mis datos"
-  actualizarBotonBorrarDatos();
 }
 
 // ==================== ACTUALIZAR TABLA ====================
@@ -316,20 +358,6 @@ function actualizarTabla() {
   });
 }
 
-// ==================== BOTÓN BORRAR DATOS ====================
-function actualizarBotonBorrarDatos() {
-  const btn = document.getElementById('btn-borrar-datos');
-  const tieneDatos = isPersistenciaAceptada() || 
-                     localStorage.getItem('combustible') || 
-                     localStorage.getItem('ubicacion');
-
-  if (tieneDatos) {
-    btn.classList.add('activo');
-  } else {
-    btn.classList.remove('activo');
-  }
-}
-
 // ==================== INICIALIZACIÓN ====================
 async function initPersistence() {
   persistenciaAceptada = (localStorage.getItem('persistencia_aceptada') === 'true');
@@ -339,7 +367,6 @@ async function initPersistence() {
     return;
   }
 
-  // Cargar combustible y ubicación
   getCar();
   const loc = getLocation();
 
@@ -367,6 +394,7 @@ async function initPersistence() {
 // ==================== EVENTOS ====================
 document.addEventListener('DOMContentLoaded', async () => {
   await cargarDatos();
+  await cargarMunicipios();     // ← Cargamos los municipios al inicio
 
   const menu = document.getElementById('menu');
   const menuBtn = document.getElementById('menu-btn');
@@ -385,7 +413,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Botón Borrar mis datos
   document.getElementById('btn-borrar-datos').addEventListener('click', () => {
-    if (confirm("¿Estás seguro de que quieres borrar todas tus preferencias guardadas?\n\nEsto eliminará el combustible seleccionado y la ubicación guardada.")) {
+    if (confirm("¿Estás seguro de que quieres borrar todas tus preferencias guardadas?")) {
       borrarTodosLosDatos();
       menu.classList.remove('show');
     }
