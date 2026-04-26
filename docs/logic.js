@@ -468,6 +468,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     resultados.forEach(municipio => {
       const item = document.createElement('div');
+      console.log(municipio);
       item.className = 'sugerencia-item';
       item.textContent = municipio;
       item.addEventListener('click', () => {
