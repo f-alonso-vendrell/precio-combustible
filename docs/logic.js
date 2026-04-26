@@ -470,7 +470,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const item = document.createElement('div');
       console.log(municipio.nombre);
       item.className = 'sugerencia-item';
-      item.textContent = municipio;
+      item.textContent = municipio.nombre;
       item.addEventListener('click', () => {
         const datos = municipiosData[municipio.nombre];
         console.log(datos);
