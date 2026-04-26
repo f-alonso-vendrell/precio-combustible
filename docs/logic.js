@@ -161,6 +161,7 @@ function normalizarTexto(texto) {
 }
 
 // Busca municipios que contengan el texto (mínimo 3 caracteres)
+// Ordena priorizando coincidencias más cercanas al principio del nombre
 function buscarMunicipio(texto) {
   if (!municipiosData || texto.length < 3) {
     return [];
@@ -170,15 +171,27 @@ function buscarMunicipio(texto) {
   const resultados = [];
 
   for (const nombre of Object.keys(municipiosData)) {
-    if (normalizarTexto(nombre).includes(busqueda)) {
-      resultados.push(nombre);
+    const nombreNormalizado = normalizarTexto(nombre);
+    const indice = nombreNormalizado.indexOf(busqueda);
+
+    if (indice !== -1) {
+      resultados.push({
+        nombre: nombre,
+        indice: indice,
+        nombreNormalizado: nombreNormalizado
+      });
     }
   }
 
-  // Ordenar alfabéticamente
-  resultados.sort((a, b) => a.localeCompare(b));
+  // Ordenar: primero por posición de coincidencia, luego alfabéticamente
+  resultados.sort((a, b) => {
+    if (a.indice !== b.indice) {
+      return a.indice - b.indice;
+    }
+    return a.nombreNormalizado.localeCompare(b.nombreNormalizado);
+  });
 
-  return resultados;
+  return resultados.map(item => item.nombre);
 }
 
 // ==================== DISTANCIA ====================
