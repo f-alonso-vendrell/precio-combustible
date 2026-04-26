@@ -476,8 +476,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log(datos);
         if (datos) {
           posicionUsuario = { lat: datos.lat, lon: datos.lon };
-          ubicacionUsada = municipio;
-          setLocation(municipio, null, { lat: datos.lat, lon: datos.lon });
+          ubicacionUsada = municipio.nombre;
+          setLocation(municipio.nombre, null, { lat: datos.lat, lon: datos.lon });
           document.getElementById('modal-ubicacion').classList.remove('show');
           inputMunicipio.value = '';
           sugerenciasDiv.innerHTML = '';
