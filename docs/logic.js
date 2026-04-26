@@ -285,7 +285,8 @@ function actualizarTabla() {
   });
 
   if (posicionUsuario) {
-    const delta = 0.0225;
+    //const delta = 0.0225;
+    const delta = 0.05;
     estaciones = estaciones.filter(est => {
       if (!est.Latitud || !est["Longitud (WGS84)"]) return false;
       const latEst = parseFloat(est.Latitud.replace(',', '.'));
