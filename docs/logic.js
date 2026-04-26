@@ -137,7 +137,6 @@ async function cargarMunicipios() {
     if (!res.ok) throw new Error();
     municipiosData = await res.json();
     console.log(`✅ Cargados ${Object.keys(municipiosData).length} municipios`);
-    actualizarTabla();
     return true;
   } catch (e) {
     console.error("Error cargando municipios-centros.json", e);
