@@ -115,8 +115,10 @@ function setLocation(nuevoTipo, nuevoValor = null, nuevaPosicion = null) {
   if (isPersistenciaAceptada()) {
     if (nuevoTipo === "Ubicación actual") {
       localStorage.setItem('ubicacion', "Ubicación actual");
-    } else if (nuevoValor) {
+    } else if (nuevoTipo.startsWith("CP ")) {
       localStorage.setItem('ubicacion', `CP ${nuevoValor}`);
+    } else {
+      localStorage.setItem('ubicacion',nuevoValor)
     }
   }
 
@@ -478,7 +480,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (datos) {
           posicionUsuario = { lat: datos.lat, lon: datos.lon };
           ubicacionUsada = municipio.nombre;
-          setLocation(municipio.nombre, null, { lat: datos.lat, lon: datos.lon });
+          setLocation(municipio.nombre, municipio.nombre, { lat: datos.lat, lon: datos.lon });
           document.getElementById('modal-ubicacion').classList.remove('show');
           inputMunicipio.value = '';
           sugerenciasDiv.innerHTML = '';
