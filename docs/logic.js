@@ -3,6 +3,7 @@ let datosPrecios = null;
 let posicionUsuario = null;
 let centrosCP = null;
 let estaObteniendoUbicacion = false;
+let ubicacionUsada = "No seleccionada";
 
 let errmsgubicacion = "";
 let errmsgnetwork = "";
