@@ -101,7 +101,7 @@ function getLocation() {
     } else {
       currentLocation.tipo = saved;
       currentLocation.valor = saved;
-      currentLocation.posicion = null;
+      currentLocation.posicion = municipiosData[saved];
     }
   } else {
     currentLocation.tipo = "No seleccionada";
