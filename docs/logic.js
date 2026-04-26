@@ -11,10 +11,8 @@ let errmsgnetwork = "";
 
 let persistenciaAceptada = false;
 
-// Cargar estado de persistencia desde localStorage
 function isPersistenciaAceptada() {
   if (persistenciaAceptada) return true;
-  
   const saved = localStorage.getItem('persistencia_aceptada');
   persistenciaAceptada = (saved === 'true');
   return persistenciaAceptada;
@@ -23,6 +21,23 @@ function isPersistenciaAceptada() {
 function aceptarPersistencia() {
   persistenciaAceptada = true;
   localStorage.setItem('persistencia_aceptada', 'true');
+}
+
+function borrarTodosLosDatos() {
+  localStorage.removeItem('persistencia_aceptada');
+  localStorage.removeItem('combustible');
+  localStorage.removeItem('ubicacion');
+
+  persistenciaAceptada = false;
+  currentCar = { combustible: null, key: null };
+  currentLocation = { tipo: "No seleccionada", valor: null, posicion: null };
+  posicionUsuario = null;
+  ubicacionUsada = "No seleccionada";
+
+  actualizarInfoBar();
+  actualizarTabla();
+
+  alert("Todos tus datos y preferencias han sido borrados.");
 }
 
 // ==================== GESTIÓN DEL COMBUSTIBLE ====================
@@ -52,7 +67,6 @@ function getCar() {
     currentCar.combustible = null;
     currentCar.key = null;
   }
-
   return { ...currentCar };
 }
 
@@ -65,7 +79,6 @@ function setCar(nuevoCombustible) {
   currentCar.combustible = nuevoCombustible;
   currentCar.key = combustibleMapping[nuevoCombustible];
 
-  // Solo guardar si el usuario aceptó persistencia
   if (isPersistenciaAceptada()) {
     localStorage.setItem('combustible', nuevoCombustible);
   }
@@ -88,7 +101,6 @@ function getLocation() {
   }
 
   const saved = localStorage.getItem('ubicacion');
-
   if (saved) {
     if (saved === "Ubicación actual") {
       currentLocation.tipo = "Ubicación actual";
@@ -104,7 +116,6 @@ function getLocation() {
     currentLocation.valor = null;
     currentLocation.posicion = null;
   }
-
   return { ...currentLocation };
 }
 
@@ -113,7 +124,6 @@ function setLocation(nuevoTipo, nuevoValor = null, nuevaPosicion = null) {
   currentLocation.valor = nuevoValor;
   currentLocation.posicion = nuevaPosicion;
 
-  // Solo guardar si el usuario aceptó persistencia
   if (isPersistenciaAceptada()) {
     if (nuevoTipo === "Ubicación actual") {
       localStorage.setItem('ubicacion', "Ubicación actual");
@@ -224,6 +234,9 @@ function actualizarInfoBar() {
   }
 
   document.getElementById('ubicacion-actual').textContent = textoUbicacion;
+
+  // Actualizar estilo del botón "Borrar mis datos"
+  actualizarBotonBorrarDatos();
 }
 
 // ==================== ACTUALIZAR TABLA ====================
@@ -303,9 +316,22 @@ function actualizarTabla() {
   });
 }
 
+// ==================== BOTÓN BORRAR DATOS ====================
+function actualizarBotonBorrarDatos() {
+  const btn = document.getElementById('btn-borrar-datos');
+  const tieneDatos = isPersistenciaAceptada() || 
+                     localStorage.getItem('combustible') || 
+                     localStorage.getItem('ubicacion');
+
+  if (tieneDatos) {
+    btn.classList.add('activo');
+  } else {
+    btn.classList.remove('activo');
+  }
+}
+
 // ==================== INICIALIZACIÓN ====================
 async function initPersistence() {
-  // Comprobar si el usuario ya aceptó la persistencia
   persistenciaAceptada = (localStorage.getItem('persistencia_aceptada') === 'true');
 
   if (!persistenciaAceptada) {
@@ -313,10 +339,8 @@ async function initPersistence() {
     return;
   }
 
-  // Cargar combustible
+  // Cargar combustible y ubicación
   getCar();
-
-  // Cargar ubicación
   const loc = getLocation();
 
   if (loc.tipo === "Ubicación actual") {
@@ -357,7 +381,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('cookie-rechazar').addEventListener('click', () => {
     document.getElementById('cookie-banner').classList.remove('show');
-    // No guardamos nada, el usuario puede cambiar de opinión más tarde
+  });
+
+  // Botón Borrar mis datos
+  document.getElementById('btn-borrar-datos').addEventListener('click', () => {
+    if (confirm("¿Estás seguro de que quieres borrar todas tus preferencias guardadas?\n\nEsto eliminará el combustible seleccionado y la ubicación guardada.")) {
+      borrarTodosLosDatos();
+      menu.classList.remove('show');
+    }
   });
 
   // Botones Cambiar

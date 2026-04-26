@@ -229,3 +229,18 @@ th { background: #f8fafc; }
 .cookie-banner.show {
   display: block;
 }
+
+/* Estilo para el botón de borrar datos */
+.menu-item.borrar-datos {
+  color: #64748b;           /* gris por defecto */
+  font-weight: normal;
+}
+
+.menu-item.borrar-datos.activo {
+  color: #ef4444;           /* rojo cuando hay datos */
+  font-weight: 500;
+}
+
+.menu-item.borrar-datos:hover {
+  background: #f1f5f9;
+}
