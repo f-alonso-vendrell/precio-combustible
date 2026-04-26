@@ -137,6 +137,7 @@ async function cargarMunicipios() {
     if (!res.ok) throw new Error();
     municipiosData = await res.json();
     console.log(`✅ Cargados ${Object.keys(municipiosData).length} municipios`);
+    actualizarTabla();
     return true;
   } catch (e) {
     console.error("Error cargando municipios-centros.json", e);
@@ -239,6 +240,7 @@ async function cargarDatos() {
   } catch (e) {
     errmsgnetwork = "No se pudieron cargar los precios. Inténtalo más tarde.";
     console.error(e);
+    console.trace();
     actualizarTabla();
   }
 }
@@ -374,9 +376,10 @@ async function initPersistence() {
 
 // ==================== EVENTOS ====================
 document.addEventListener('DOMContentLoaded', async () => {
-  await cargarDatos();
   await cargarMunicipios();   // ← Cargamos municipios
 
+  await cargarDatos();
+  
   const menu = document.getElementById('menu');
   const menuBtn = document.getElementById('menu-btn');
   menuBtn.addEventListener('click', () => menu.classList.toggle('show'));
