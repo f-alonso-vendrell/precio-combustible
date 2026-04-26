@@ -369,6 +369,10 @@ async function initPersistence() {
       ubicacionUsada = `CP ${cp}`;
     }
   }
+  else {
+    posicionUsuario = loc.posicion;
+    ubicacionUsada = loc.valor;
+  }
 
   actualizarTabla();
 }
