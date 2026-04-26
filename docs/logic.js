@@ -2,7 +2,7 @@
 let datosPrecios = null;
 let posicionUsuario = null;
 let centrosCP = null;
-let municipiosData = null;           // Datos de todos los municipios
+let municipiosData = null;
 let estaObteniendoUbicacion = false;
 
 let errmsgubicacion = "";
@@ -37,16 +37,11 @@ function borrarTodosLosDatos() {
 
   actualizarInfoBar();
   actualizarTabla();
-
   alert("Todos tus datos y preferencias han sido borrados.");
 }
 
 // ==================== GESTIÓN DEL COMBUSTIBLE ====================
-
-let currentCar = {
-  combustible: null,
-  key: null
-};
+let currentCar = { combustible: null, key: null };
 
 const combustibleMapping = {
   "Gasolina 95": "Precio Gasolina 95 E5",
@@ -56,9 +51,7 @@ const combustibleMapping = {
 };
 
 function getCar() {
-  if (currentCar.combustible && currentCar.key) {
-    return { ...currentCar };
-  }
+  if (currentCar.combustible && currentCar.key) return { ...currentCar };
 
   const saved = localStorage.getItem('combustible');
   if (saved && combustibleMapping[saved]) {
@@ -72,10 +65,7 @@ function getCar() {
 }
 
 function setCar(nuevoCombustible) {
-  if (!combustibleMapping[nuevoCombustible]) {
-    console.error("Combustible no válido:", nuevoCombustible);
-    return;
-  }
+  if (!combustibleMapping[nuevoCombustible]) return;
 
   currentCar.combustible = nuevoCombustible;
   currentCar.key = combustibleMapping[nuevoCombustible];
@@ -89,7 +79,6 @@ function setCar(nuevoCombustible) {
 }
 
 // ==================== GESTIÓN DE UBICACIÓN ====================
-
 let currentLocation = {
   tipo: "No seleccionada",
   valor: null,
@@ -97,9 +86,7 @@ let currentLocation = {
 };
 
 function getLocation() {
-  if (currentLocation.tipo !== "No seleccionada") {
-    return { ...currentLocation };
-  }
+  if (currentLocation.tipo !== "No seleccionada") return { ...currentLocation };
 
   const saved = localStorage.getItem('ubicacion');
   if (saved) {
@@ -137,12 +124,11 @@ function setLocation(nuevoTipo, nuevoValor = null, nuevaPosicion = null) {
   actualizarTabla();
 }
 
-// ==================== NUEVA: CARGA Y BÚSQUEDA DE MUNICIPIOS ====================
-
+// ==================== MUNICIPIOS ====================
 async function cargarMunicipios() {
   try {
     const res = await fetch('municipios/municipios-centros.json');
-    if (!res.ok) throw new Error('No se pudo cargar el archivo de municipios');
+    if (!res.ok) throw new Error();
     municipiosData = await res.json();
     console.log(`✅ Cargados ${Object.keys(municipiosData).length} municipios`);
     return true;
@@ -152,46 +138,24 @@ async function cargarMunicipios() {
   }
 }
 
-// Normaliza texto: elimina acentos y convierte a minúsculas
 function normalizarTexto(texto) {
-  return texto
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+  return texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
-// Busca municipios que contengan el texto (mínimo 3 caracteres)
-// Ordena priorizando coincidencias más cercanas al principio del nombre
 function buscarMunicipio(texto) {
-  if (!municipiosData || texto.length < 3) {
-    return [];
-  }
+  if (!municipiosData || texto.length < 3) return [];
 
   const busqueda = normalizarTexto(texto);
   const resultados = [];
 
-  for (const nombre of Object.keys(municipiosData)) {
-    const nombreNormalizado = normalizarTexto(nombre);
-    const indice = nombreNormalizado.indexOf(busqueda);
-
-    if (indice !== -1) {
-      resultados.push({
-        nombre: nombre,
-        indice: indice,
-        nombreNormalizado: nombreNormalizado
-      });
+  for (const [nombre, datos] of Object.entries(municipiosData)) {
+    if (normalizarTexto(nombre).includes(busqueda)) {
+      resultados.push({ nombre, ...datos });
     }
   }
 
-  // Ordenar: primero por posición de coincidencia, luego alfabéticamente
-  resultados.sort((a, b) => {
-    if (a.indice !== b.indice) {
-      return a.indice - b.indice;
-    }
-    return a.nombreNormalizado.localeCompare(b.nombreNormalizado);
-  });
-
-  return resultados.map(item => item.nombre);
+  resultados.sort((a, b) => a.nombre.localeCompare(b.nombre));
+  return resultados.slice(0, 5); // Top 5
 }
 
 // ==================== DISTANCIA ====================
@@ -199,9 +163,7 @@ function calcularDistancia(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat/2)**2 + 
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-            Math.sin(dLon/2)**2;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2)**2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
@@ -284,7 +246,6 @@ function actualizarInfoBar() {
     car.combustible || "Ninguno seleccionado";
 
   let textoUbicacion = loc.tipo;
-
   if (loc.tipo === "Ubicación actual") {
     if (estaObteniendoUbicacion || !posicionUsuario) {
       textoUbicacion = "Ubicación actual (refrescando...)";
@@ -407,13 +368,13 @@ async function initPersistence() {
 // ==================== EVENTOS ====================
 document.addEventListener('DOMContentLoaded', async () => {
   await cargarDatos();
-  await cargarMunicipios();     // ← Cargamos los municipios al inicio
+  await cargarMunicipios();   // ← Cargamos municipios
 
   const menu = document.getElementById('menu');
   const menuBtn = document.getElementById('menu-btn');
   menuBtn.addEventListener('click', () => menu.classList.toggle('show'));
 
-  // Banner de persistencia
+  // Banner
   document.getElementById('cookie-aceptar').addEventListener('click', () => {
     aceptarPersistencia();
     document.getElementById('cookie-banner').classList.remove('show');
@@ -424,9 +385,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('cookie-banner').classList.remove('show');
   });
 
-  // Botón Borrar mis datos
+  // Botón Borrar datos
   document.getElementById('btn-borrar-datos').addEventListener('click', () => {
-    if (confirm("¿Estás seguro de que quieres borrar todas tus preferencias guardadas?")) {
+    if (confirm("¿Estás seguro de que quieres borrar todas tus preferencias?")) {
       borrarTodosLosDatos();
       menu.classList.remove('show');
     }
@@ -443,7 +404,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     menu.classList.remove('show');
   });
 
-  // Selección de combustible
+  // Selección combustible
   document.querySelectorAll('#modal-combustible .modal-option').forEach(btn => {
     btn.addEventListener('click', () => {
       setCar(btn.dataset.combustible);
@@ -493,8 +454,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  // ==================== NUEVA: BÚSQUEDA POR MUNICIPIO ====================
+  const inputMunicipio = document.getElementById('modal-buscar-municipio');
+  const sugerenciasDiv = document.getElementById('municipio-sugerencias');
+
+  inputMunicipio.addEventListener('input', () => {
+    const texto = inputMunicipio.value.trim();
+    sugerenciasDiv.innerHTML = '';
+
+    if (texto.length < 3) return;
+
+    const resultados = buscarMunicipio(texto);
+
+    resultados.forEach(municipio => {
+      const item = document.createElement('div');
+      item.className = 'sugerencia-item';
+      item.textContent = municipio;
+      item.addEventListener('click', () => {
+        const datos = municipiosData[municipio];
+        if (datos) {
+          posicionUsuario = { lat: datos.lat, lon: datos.lon };
+          ubicacionUsada = municipio;
+          setLocation(municipio, null, { lat: datos.lat, lon: datos.lon });
+          document.getElementById('modal-ubicacion').classList.remove('show');
+          inputMunicipio.value = '';
+          sugerenciasDiv.innerHTML = '';
+        }
+      });
+      sugerenciasDiv.appendChild(item);
+    });
+  });
+
   document.getElementById('cancelar-ubicacion').addEventListener('click', () => {
     document.getElementById('modal-ubicacion').classList.remove('show');
+    inputMunicipio.value = '';
+    sugerenciasDiv.innerHTML = '';
   });
 
   // Iniciar

@@ -73,12 +73,25 @@
   <div id="modal-ubicacion" class="modal">
     <div class="modal-content">
       <h3>Selecciona la ubicación</h3>
+      
       <button id="modal-geoloc" class="modal-option">📍 Usar mi ubicación actual</button>
+      
       <hr>
-      <div class="cp-container" style="margin: 6px;">
+      
+      <!-- Sección Código Postal -->
+      <div class="cp-container">
         <input type="text" id="modal-codigo-postal" class="modal-entry" placeholder="Código postal (ej: 28001)" maxlength="5">
         <button id="modal-buscar-cp" class="modal-option">Buscar por CP</button>
       </div>
+
+      <hr>
+
+      <!-- Nueva Sección: Buscar por Municipio -->
+      <div class="municipio-container">
+        <input type="text" id="modal-buscar-municipio" class="modal-entry" placeholder="Buscar municipio (mín. 3 letras)" autocomplete="off">
+        <div id="municipio-sugerencias" class="sugerencias-lista"></div>
+      </div>
+
       <button id="cancelar-ubicacion" class="btn-cancelar">Cancelar</button>
     </div>
   </div>
