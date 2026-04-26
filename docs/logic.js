@@ -3,7 +3,6 @@ let datosPrecios = null;
 let posicionUsuario = null;
 let centrosCP = null;
 let estaObteniendoUbicacion = false;
-let ubicacionUsada = "No seleccionada";
 
 let errmsgubicacion = "";
 let errmsgnetwork = "";
@@ -49,6 +48,56 @@ function setCar(nuevoCombustible) {
   currentCar.key = combustibleMapping[nuevoCombustible];
 
   localStorage.setItem('combustible', nuevoCombustible);
+
+  actualizarInfoBar();
+  actualizarTabla();
+}
+
+// ==================== GESTIÓN DE UBICACIÓN ====================
+
+let currentLocation = {
+  tipo: "No seleccionada",     // "Ubicación actual" o "CP 28001"
+  valor: null,                 // código postal o null
+  posicion: null               // {lat, lon} o null
+};
+
+function getLocation() {
+  if (currentLocation.tipo !== "No seleccionada") {
+    return { ...currentLocation };
+  }
+
+  const saved = getCookie("ubicacion");
+
+  if (saved) {
+    if (saved === "Ubicación actual") {
+      currentLocation.tipo = "Ubicación actual";
+      currentLocation.valor = null;
+      currentLocation.posicion = posicionUsuario;
+    } else if (saved.startsWith("CP ")) {
+      currentLocation.tipo = saved;
+      currentLocation.valor = saved.substring(3);
+      currentLocation.posicion = null;
+    }
+  } else {
+    currentLocation.tipo = "No seleccionada";
+    currentLocation.valor = null;
+    currentLocation.posicion = null;
+  }
+
+  return { ...currentLocation };
+}
+
+function setLocation(nuevoTipo, nuevoValor = null, nuevaPosicion = null) {
+  currentLocation.tipo = nuevoTipo;
+  currentLocation.valor = nuevoValor;
+  currentLocation.posicion = nuevaPosicion;
+
+  // Guardar en cookie
+  if (nuevoTipo === "Ubicación actual") {
+    setCookie("ubicacion", "Ubicación actual");
+  } else if (nuevoValor) {
+    setCookie("ubicacion", `CP ${nuevoValor}`);
+  }
 
   actualizarInfoBar();
   actualizarTabla();
@@ -138,13 +187,14 @@ async function cargarDatos() {
 // ==================== ACTUALIZAR INFO BAR ====================
 function actualizarInfoBar() {
   const car = getCar();
+  const loc = getLocation();
 
   document.getElementById('combustible-actual').textContent = 
     car.combustible || "Ninguno seleccionado";
 
-  let textoUbicacion = ubicacionUsada || "No seleccionada";
+  let textoUbicacion = loc.tipo;
 
-  if (ubicacionUsada === "Ubicación actual") {
+  if (loc.tipo === "Ubicación actual") {
     if (estaObteniendoUbicacion || !posicionUsuario) {
       textoUbicacion = "Ubicación actual (refrescando...)";
     }
@@ -173,7 +223,7 @@ function actualizarTabla() {
     tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:50px;">Selecciona un tipo de combustible</td></tr>`;
     return;
   }
-  if (!posicionUsuario && ubicacionUsada !== "No seleccionada") {
+  if (!posicionUsuario && getLocation().tipo === "No seleccionada") {
     tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:50px;">Selecciona una ubicación</td></tr>`;
     return;
   }
@@ -230,7 +280,7 @@ function actualizarTabla() {
   });
 }
 
-// ==================== COOKIES (solo para ubicación y banner por ahora) ====================
+// ==================== COOKIES ====================
 function setCookie(name, value, days = 30) {
   const date = new Date();
   date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
@@ -248,7 +298,7 @@ function getCookie(name) {
   return null;
 }
 
-// ==================== INICIALIZACIÓN (renombrada) ====================
+// ==================== INICIALIZACIÓN ====================
 async function initPersistence() {
   const cookiesAceptadas = getCookie("cookies_aceptadas");
 
@@ -257,29 +307,27 @@ async function initPersistence() {
     return;
   }
 
-  // Cargar combustible desde localStorage
-  getCar();                    // ← Solo llamamos a getCar(), sin cookies
+  // Cargar combustible
+  getCar();
 
-  // Cargar ubicación (todavía desde cookies)
-  const savedUbicacion = getCookie("ubicacion");
+  // Cargar ubicación
+  const loc = getLocation();
 
-  if (savedUbicacion) {
-    if (savedUbicacion === "Ubicación actual") {
-      ubicacionUsada = "Ubicación actual";
-      try {
-        await obtenerUbicacionActual();
-      } catch (e) {
-        console.log("No se pudo recuperar ubicación GPS automáticamente");
-      }
-    } 
-    else if (savedUbicacion.startsWith("CP ")) {
-      const cp = savedUbicacion.substring(3);
-      const provincia = cp.substring(0, 2);
-      const cargado = await cargarCentrosCP(provincia);
-      if (cargado && centrosCP && centrosCP[cp]) {
-        posicionUsuario = centrosCP[cp];
-        ubicacionUsada = `CP ${cp}`;
-      }
+  if (loc.tipo === "Ubicación actual") {
+    ubicacionUsada = "Ubicación actual";
+    try {
+      await obtenerUbicacionActual();
+    } catch (e) {
+      console.log("No se pudo recuperar ubicación GPS automáticamente");
+    }
+  } 
+  else if (loc.tipo.startsWith("CP ")) {
+    const cp = loc.tipo.substring(3);
+    const provincia = cp.substring(0, 2);
+    const cargado = await cargarCentrosCP(provincia);
+    if (cargado && centrosCP && centrosCP[cp]) {
+      posicionUsuario = centrosCP[cp];
+      ubicacionUsada = `CP ${cp}`;
     }
   }
 
@@ -335,7 +383,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     errmsgubicacion = '';
     try {
       await obtenerUbicacionActual();
-      setCookie("ubicacion", "Ubicación actual");
+      setLocation("Ubicación actual");
       actualizarTabla();
     } catch (err) {
       errmsgubicacion = err;
@@ -357,7 +405,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (cargado && centrosCP && centrosCP[cp]) {
       posicionUsuario = centrosCP[cp];
       ubicacionUsada = `CP ${cp}`;
-      setCookie("ubicacion", ubicacionUsada);
+      setLocation(`CP ${cp}`, cp, null);
       errmsgubicacion = "";
       document.getElementById('modal-ubicacion').classList.remove('show');
       actualizarTabla();
@@ -371,6 +419,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('modal-ubicacion').classList.remove('show');
   });
 
-  // Iniciar persistencia
+  // Iniciar
   initPersistence();
 });
