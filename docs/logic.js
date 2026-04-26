@@ -7,6 +7,24 @@ let estaObteniendoUbicacion = false;
 let errmsgubicacion = "";
 let errmsgnetwork = "";
 
+// ==================== GESTIÓN DE PERSISTENCIA ====================
+
+let persistenciaAceptada = false;
+
+// Cargar estado de persistencia desde localStorage
+function isPersistenciaAceptada() {
+  if (persistenciaAceptada) return true;
+  
+  const saved = localStorage.getItem('persistencia_aceptada');
+  persistenciaAceptada = (saved === 'true');
+  return persistenciaAceptada;
+}
+
+function aceptarPersistencia() {
+  persistenciaAceptada = true;
+  localStorage.setItem('persistencia_aceptada', 'true');
+}
+
 // ==================== GESTIÓN DEL COMBUSTIBLE ====================
 
 let currentCar = {
@@ -47,18 +65,21 @@ function setCar(nuevoCombustible) {
   currentCar.combustible = nuevoCombustible;
   currentCar.key = combustibleMapping[nuevoCombustible];
 
-  localStorage.setItem('combustible', nuevoCombustible);
+  // Solo guardar si el usuario aceptó persistencia
+  if (isPersistenciaAceptada()) {
+    localStorage.setItem('combustible', nuevoCombustible);
+  }
 
   actualizarInfoBar();
   actualizarTabla();
 }
 
-// ==================== GESTIÓN DE UBICACIÓN (ahora en localStorage) ====================
+// ==================== GESTIÓN DE UBICACIÓN ====================
 
 let currentLocation = {
-  tipo: "No seleccionada",     // "Ubicación actual" o "CP 28001"
-  valor: null,                 // código postal o null
-  posicion: null               // {lat, lon} o null
+  tipo: "No seleccionada",
+  valor: null,
+  posicion: null
 };
 
 function getLocation() {
@@ -66,7 +87,6 @@ function getLocation() {
     return { ...currentLocation };
   }
 
-  // Leer desde localStorage
   const saved = localStorage.getItem('ubicacion');
 
   if (saved) {
@@ -93,11 +113,13 @@ function setLocation(nuevoTipo, nuevoValor = null, nuevaPosicion = null) {
   currentLocation.valor = nuevoValor;
   currentLocation.posicion = nuevaPosicion;
 
-  // Guardar en localStorage
-  if (nuevoTipo === "Ubicación actual") {
-    localStorage.setItem('ubicacion', "Ubicación actual");
-  } else if (nuevoValor) {
-    localStorage.setItem('ubicacion', `CP ${nuevoValor}`);
+  // Solo guardar si el usuario aceptó persistencia
+  if (isPersistenciaAceptada()) {
+    if (nuevoTipo === "Ubicación actual") {
+      localStorage.setItem('ubicacion', "Ubicación actual");
+    } else if (nuevoValor) {
+      localStorage.setItem('ubicacion', `CP ${nuevoValor}`);
+    }
   }
 
   actualizarInfoBar();
@@ -281,37 +303,20 @@ function actualizarTabla() {
   });
 }
 
-// ==================== COOKIES (solo para banner de cookies) ====================
-function setCookie(name, value, days = 30) {
-  const date = new Date();
-  date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-  document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
-}
-
-function getCookie(name) {
-  const cookies = document.cookie.split(';');
-  for (let cookie of cookies) {
-    cookie = cookie.trim();
-    if (cookie.startsWith(name + '=')) {
-      return cookie.substring(name.length + 1);
-    }
-  }
-  return null;
-}
-
 // ==================== INICIALIZACIÓN ====================
 async function initPersistence() {
-  const cookiesAceptadas = getCookie("cookies_aceptadas");
+  // Comprobar si el usuario ya aceptó la persistencia
+  persistenciaAceptada = (localStorage.getItem('persistencia_aceptada') === 'true');
 
-  if (!cookiesAceptadas || cookiesAceptadas === "no") {
+  if (!persistenciaAceptada) {
     document.getElementById('cookie-banner').classList.add('show');
     return;
   }
 
-  // Cargar combustible desde localStorage
+  // Cargar combustible
   getCar();
 
-  // Cargar ubicación desde localStorage
+  // Cargar ubicación
   const loc = getLocation();
 
   if (loc.tipo === "Ubicación actual") {
@@ -343,16 +348,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   const menuBtn = document.getElementById('menu-btn');
   menuBtn.addEventListener('click', () => menu.classList.toggle('show'));
 
-  // Cookie banner
+  // Banner de persistencia
   document.getElementById('cookie-aceptar').addEventListener('click', () => {
-    setCookie("cookies_aceptadas", "si", 365);
+    aceptarPersistencia();
     document.getElementById('cookie-banner').classList.remove('show');
     initPersistence();
   });
 
   document.getElementById('cookie-rechazar').addEventListener('click', () => {
-    setCookie("cookies_aceptadas", "no", 30);
     document.getElementById('cookie-banner').classList.remove('show');
+    // No guardamos nada, el usuario puede cambiar de opinión más tarde
   });
 
   // Botones Cambiar
@@ -420,6 +425,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('modal-ubicacion').classList.remove('show');
   });
 
-  // Iniciar persistencia
+  // Iniciar
   initPersistence();
 });
