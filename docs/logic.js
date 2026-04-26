@@ -472,7 +472,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       item.className = 'sugerencia-item';
       item.textContent = municipio;
       item.addEventListener('click', () => {
-        const datos = municipiosData[municipio];
+        const datos = municipiosData[municipio.nombre];
+        console.log(datos);
         if (datos) {
           posicionUsuario = { lat: datos.lat, lon: datos.lon };
           ubicacionUsada = municipio;
