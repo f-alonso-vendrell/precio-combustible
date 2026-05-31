@@ -377,6 +377,107 @@ async function initPersistence() {
   actualizarTabla();
 }
 
+// ==================== FUNCIÓN MEJORADA: ESTADO Y TIEMPO RESTANTE ====================
+
+/**
+ * Devuelve el estado de una gasolinera y tiempo restante
+ * @param {string} fechaHora - Formato: yyyymmddhhmm (ej: "202505311430")
+ * @param {string} horarioStr - Horario oficial
+ * @returns {Array} ["abierta", minutosHastaCierre] o ["cerrada", minutosHastaApertura]
+ */
+function estaAbierta(fechaHora, horarioStr) {
+  if (!fechaHora || !horarioStr) {
+    return ["cerrada", 999999];
+  }
+
+  // Parsear fecha/hora
+  const year = parseInt(fechaHora.substring(0, 4));
+  const month = parseInt(fechaHora.substring(4, 6)) - 1;
+  const day = parseInt(fechaHora.substring(6, 8));
+  const hour = parseInt(fechaHora.substring(8, 10));
+  const minute = parseInt(fechaHora.substring(10, 12));
+
+  const fecha = new Date(year, month, day, hour, minute);
+  const diaSemana = fecha.getDay(); // 0=Domingo ... 6=Sábado
+  const diaActual = ["D", "L", "M", "X", "J", "V", "S"][diaSemana];
+
+  const minutosActual = hour * 60 + minute;
+
+  let mejorCierre = Infinity;   // minutos hasta cerrar
+  let mejorApertura = Infinity; // minutos hasta abrir
+
+  const partes = horarioStr.split(';').map(p => p.trim());
+
+  for (const parte of partes) {
+    if (!parte) continue;
+
+    // Caso especial 24H
+    if (parte.includes("24H")) {
+      const dias24h = parte.split(':')[0].trim();
+      if (dias24h === "L-D" || 
+          (dias24h === "L-S" && diaActual !== "D") || 
+          (dias24h.includes(diaActual))) {
+        return ["abierta", 10000]; // nunca cierra
+      }
+      continue;
+    }
+
+    const [diasStr, horasStr] = parte.split(':').map(s => s.trim());
+    if (!diasStr || !horasStr) continue;
+
+    // ¿El día actual está incluido?
+    let diaIncluido = false;
+    const rangoDias = diasStr.split('-').map(d => d.trim());
+
+    if (rangoDias.length === 1) {
+      diaIncluido = rangoDias[0] === diaActual;
+    } else if (rangoDias.length === 2) {
+      const inicio = rangoDias[0];
+      const fin = rangoDias[1];
+      const diasSemana = ["L","M","X","J","V","S","D"];
+      const idxInicio = diasSemana.indexOf(inicio);
+      const idxFin = diasSemana.indexOf(fin);
+      const idxActual = diasSemana.indexOf(diaActual);
+
+      if (idxInicio <= idxFin) {
+        diaIncluido = idxActual >= idxInicio && idxActual <= idxFin;
+      } else {
+        diaIncluido = idxActual >= idxInicio || idxActual <= idxFin;
+      }
+    }
+
+    if (!diaIncluido) continue;
+
+    // Parsear horario del día
+    const [aperturaStr, cierreStr] = horasStr.split('-').map(h => h.trim());
+    if (!aperturaStr || !cierreStr) continue;
+
+    const [horaAbre, minAbre = 0] = aperturaStr.split(':').map(Number);
+    const [horaCierra, minCierra = 0] = cierreStr.split(':').map(Number);
+
+    const minutosAbre = horaAbre * 60 + minAbre;
+    const minutosCierra = horaCierra * 60 + minCierra;
+
+    // Está abierta ahora?
+    if (minutosActual >= minutosAbre && minutosActual < minutosCierra) {
+      const minutosHastaCierre = minutosCierra - minutosActual;
+      return ["abierta", minutosHastaCierre];
+    }
+
+    // Calculamos tiempo hasta abrir (si está cerrada)
+    let minutosHastaAbrir = minutosAbre - minutosActual;
+    if (minutosHastaAbrir < 0) minutosHastaAbrir += 24 * 60; // mañana
+
+    if (minutosHastaAbrir < mejorApertura) {
+      mejorApertura = minutosHastaAbrir;
+    }
+  }
+
+  // Si llegó aquí es porque está cerrada
+  return ["cerrada", mejorApertura === Infinity ? 999999 : mejorApertura];
+}
+
+
 // ==================== EVENTOS ====================
 document.addEventListener('DOMContentLoaded', async () => {
   await cargarMunicipios();   // ← Cargamos municipios
