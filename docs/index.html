@@ -60,8 +60,60 @@
     </table>
   </main>
 
-  <!-- Modales (mantengo los que ya tenías) -->
-  <!-- Modal Combustible, Modal Ubicación, Cookie Banner... -->
+  <!-- Modal Combustible -->
+  <div id="modal-combustible" class="modal">
+    <div class="modal-content">
+      <h3>Selecciona el combustible</h3>
+      <button data-combustible="Gasolina 95" class="modal-option">Gasolina 95</button>
+      <button data-combustible="Gasolina 95 Premium" class="modal-option">Gasolina 95 Premium</button>
+      <button data-combustible="Diésel" class="modal-option">Diésel</button>
+      <button data-combustible="Diésel Premium" class="modal-option">Diésel Premium</button>
+      <button id="cancelar-combustible" class="btn-cancelar">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- Modal Ubicación -->
+ <div id="modal-ubicacion" class="modal">
+   <div class="modal-content">
+     <h3>Selecciona la ubicación</h3>
+
+     <button id="modal-geoloc" class="modal-option">📍 Usar mi ubicación actual</button>
+
+     <hr>
+
+     <!-- Sección Código Postal -->
+     <div class="cp-container">
+       <input type="text" id="modal-codigo-postal" class="modal-entry" placeholder="Código postal (ej: 28001)" maxlength="5">
+       <button id="modal-buscar-cp" class="modal-option">Buscar por CP</button>
+     </div>
+
+     <hr>
+
+     <!-- Nueva Sección: Buscar por Municipio -->
+     <div class="municipio-container">
+       <input type="text" id="modal-buscar-municipio" class="modal-entry" placeholder="Buscar municipio (mín. 3 letras)" autocomplete="off">
+       <div id="municipio-sugerencias" class="sugerencias-lista"></div>
+     </div>
+
+     <button id="cancelar-ubicacion" class="btn-cancelar">Cancelar</button>
+   </div>
+ </div>
+
+  <!-- Popup de Cookies -->
+  <div id="cookie-banner" class="cookie-banner">
+    <div class="cookie-content">
+      <p>Usamos almacen local de tu navegador para guardar tus preferencias (combustible y ubicación) y mejorar tu experiencia.</p>
+      <p>Ningun dato se envia o almacena en el servidor, todos los datos se quedan en tu equipo</p>
+      <p>Para borrar los datos, ve al menu ☰ y selecciona "Borrar mis datos"</p>
+      <div class="cookie-buttons">
+        <button id="cookie-rechazar" class="cookie-btn rechazar">No aceptar</button>
+        <button id="cookie-aceptar" class="cookie-btn aceptar">Aceptar</button>
+      </div>
+    </div>
+  </div>
+
+
+
 
   <script src="logic.js"></script>
 </body>

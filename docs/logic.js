@@ -388,20 +388,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   menuBtn.addEventListener('click', () => menu.classList.toggle('show'));
 
   // Banner
+  document.getElementById('cookie-aceptar').addEventListener('click', () => {
+    aceptarPersistencia();
+    document.getElementById('cookie-banner').classList.remove('show');
+    initPersistence();
+  });
 
-  persistenciaAceptada = (localStorage.getItem('persistencia_aceptada') === 'true');
-
-  if (!persistenciaAceptada) {
-    document.getElementById('cookie-aceptar').addEventListener('click', () => {
-      aceptarPersistencia();
-      document.getElementById('cookie-banner').classList.remove('show');
-      initPersistence();
-    });
-
-    document.getElementById('cookie-rechazar').addEventListener('click', () => {
-      document.getElementById('cookie-banner').classList.remove('show');
-    });
-  }
+  document.getElementById('cookie-rechazar').addEventListener('click', () => {
+    document.getElementById('cookie-banner').classList.remove('show');
+  });
 
   // Botón Borrar datos
   document.getElementById('btn-borrar-datos').addEventListener('click', () => {
