@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuración - Precios Combustible</title>
+  <link rel="stylesheet" href="../index.css">
+</head>
+<body>
+  <header>
+    <h1 onclick="window.location.href='../index.html'" style="cursor:pointer;">
+      Precios de Combustible
+    </h1>
+    <button id="menu-btn" class="menu-btn">☰</button>
+  </header>
+
+  <div class="config-container">
+    <h2>Configuración</h2>
+
+    <div id="info-bar" class="info-bar">
+      <h3>Visualización</h3>
+      <div class="selector-row">
+        <span class="label">Ocultar estaciones con servicio limitado:</span>
+        <input type="checkbox" id="ocultar-limitados" checked>
+      </div>
+      <div class="selector-row">
+        <span class="label">Ocultar estaciones cerradas:</span>
+        <input type="checkbox" id="ocultar-cerrados" checked>
+      </div>
+    </div>
+
+    <!-- Aquí podrás añadir más configuraciones en el futuro -->
+  </div>
+
+  
+
+  <script src="config.js"></script>
+
+</body>
+</html>
